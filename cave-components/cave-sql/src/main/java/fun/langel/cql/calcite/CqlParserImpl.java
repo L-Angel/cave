@@ -16,3 +16,4 @@ public class CqlParserImpl implements SqlParserImplFactory {
         return null;
     }
 }
+
