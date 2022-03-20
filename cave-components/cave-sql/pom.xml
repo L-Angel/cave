@@ -22,15 +22,6 @@
             <groupId>org.apache.calcite</groupId>
             <artifactId>calcite-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -41,11 +32,17 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <!--                    <includes>-->
+                    <!--                        <include>**/**.ftl</include>-->
+                    <!--                        <include>**/**.jj</include>-->
+                    <!--                        <include>**.fmpp</include>-->
+                    <!--                    </includes>-->
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>javacc-maven-plugin</artifactId>
+                <version>${javacc-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>javacc</id>
@@ -82,6 +79,7 @@
             <plugin>
                 <groupId>org.apache.drill.tools</groupId>
                 <artifactId>drill-fmpp-maven-plugin</artifactId>
+                <version>1.17.0</version>
                 <executions>
                     <execution>
                         <configuration>
@@ -98,5 +96,11 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/codegen</directory>
+                <targetPath>codegen</targetPath>
+            </resource>
+        </resources>
     </build>
 </project>

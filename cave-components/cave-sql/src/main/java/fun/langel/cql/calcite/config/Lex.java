@@ -14,7 +14,7 @@ public enum Lex {
     MYSQL_ANSI(Quoting.DOUBLE_QUOTE, Casing.UNCHANGED, Casing.UNCHANGED, false),
     SQL_SERVER(Quoting.BRACKET, Casing.UNCHANGED, Casing.UNCHANGED, false),
     JAVA(Quoting.BACK_TICK, Casing.UNCHANGED, Casing.UNCHANGED, true),
-    CAVE_SQL(Quoting.BACK_TICK,Casing.TO_LOWER,Casing.TO_LOWER,false);
+    CAVE_SQL(Quoting.BACK_TICK,Casing.UNCHANGED,Casing.TO_LOWER,false);
 
     public final Quoting quoting;
     public final Casing unquotedCasing;

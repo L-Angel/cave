@@ -2,7 +2,9 @@ package fun.langel.cql;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
- * @since 2021/11/9 3:40 下午
+ * @since 2022/3/18 11:32
  **/
-public class Test {
+public enum Language {
+    MYSQL,
+    QDL_ELASTIC_SEARCH;
 }

@@ -1,8 +1,8 @@
 package fun.langel.cql.calcite;
 
-import org.apache.calcite.avatica.util.Casing;
-import org.apache.calcite.avatica.util.Quoting;
-import org.apache.calcite.config.Lex;
+import fun.langel.cql.Cql;
+import fun.langel.cql.Language;
+import fun.langel.cql.calcite.config.Lex;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -26,17 +26,13 @@ public class CalciteTest {
     @Test
     public void testSqlParse() throws SqlParseException {
         final String sql1 = "select * from table1 where field1=${value1} and field2=${value2} order by ${value1}";
-        final String sql2 = "select * from table2 where field1 = 1 and field2 = 'value2' order by field2 asc limit 1,100";
+        final String sql2 = "select * from table2 where field1 = 1  order by field2 asc limit 1,100";
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
 
         final FrameworkConfig config = Frameworks.newConfigBuilder()
-                .parserConfig(SqlParser.configBuilder()
-                        .setLex(Lex.MYSQL)
+                .parserConfig(Calcite.configBuilder()
+                        .setLex(Lex.CAVE_SQL)
                         .setParserFactory(SqlParserImpl.FACTORY)
-                        .setCaseSensitive(false)
-                        .setQuoting(Quoting.BACK_TICK)
-                        .setQuotedCasing(Casing.TO_UPPER)
-                        .setUnquotedCasing(Casing.TO_UPPER)
                         .setConformance(SqlConformanceEnum.MYSQL_5)
                         .build())
                 .build();
@@ -47,8 +43,15 @@ public class CalciteTest {
 
         SqlParser parser2 = SqlParser.create(sql2, config.getParserConfig());
         SqlNode sqlNode2 = parser2.parseStmt();
-
         System.out.println(sqlNode2);
+        System.out.println(parser2);
+    }
+
+    @Test
+    public void cqlParseTest() throws SqlParseException {
+        final String sql = "select field1,field2 from table2 where field1 = 1 and field2 = 'value2'order by field2 asc limit 1,100";
+        Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
+
 
     }
 }

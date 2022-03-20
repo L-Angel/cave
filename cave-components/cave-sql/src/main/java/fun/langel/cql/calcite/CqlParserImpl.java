@@ -1,8 +1,9 @@
 package fun.langel.cql.calcite;
 
-import org.apache.calcite.sql.parser.SqlAbstractParserImpl;
-import org.apache.calcite.sql.parser.SqlParser;
-import org.apache.calcite.sql.parser.SqlParserImplFactory;
+import org.apache.calcite.avatica.util.Casing;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.parser.*;
+import org.apache.calcite.sql.validate.SqlConformance;
 
 import java.io.Reader;
 
@@ -13,7 +14,67 @@ import java.io.Reader;
 public class CqlParserImpl implements SqlParserImplFactory {
     @Override
     public SqlAbstractParserImpl getParser(Reader reader) {
-        return null;
+        return new SqlAbstractParserImpl() {
+            @Override
+            public Metadata getMetadata() {
+                return null;
+            }
+
+            @Override
+            public SqlParseException normalizeException(Throwable throwable) {
+                return null;
+            }
+
+            @Override
+            protected SqlParserPos getPos() throws Exception {
+                return null;
+            }
+
+            @Override
+            public void ReInit(Reader reader) {
+
+            }
+
+            @Override
+            public SqlNode parseSqlExpressionEof() throws Exception {
+                return null;
+            }
+
+            @Override
+            public SqlNode parseSqlStmtEof() throws Exception {
+                return null;
+            }
+
+            @Override
+            public void setTabSize(int i) {
+
+            }
+
+            @Override
+            public void setQuotedCasing(Casing casing) {
+
+            }
+
+            @Override
+            public void setUnquotedCasing(Casing casing) {
+
+            }
+
+            @Override
+            public void setIdentifierMaxLength(int i) {
+
+            }
+
+            @Override
+            public void setConformance(SqlConformance sqlConformance) {
+
+            }
+
+            @Override
+            public void switchTo(String s) {
+
+            }
+        };
     }
 }
 

@@ -1,6 +1,6 @@
 package fun.langel.cql.antlr;
 
-import org.antlr.v4.runtime.CharStream;
+
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -37,17 +37,17 @@ public class AntlrTest {
 
         String sql2 = "Select 'abc' as a, `hahah` as c  From a aS table;";
 //        CSqlLexer lexer = new CSqlLexer(CharStreams.fromString(sql2));
-        CSqlLexer lexer = new CSqlLexer(CharStreams.fromString(sql));
-        CSqlParser parser = new CSqlParser(new CommonTokenStream(lexer));
-
-        ParseTree tree = parser.sqlStatements();
-
-//        CSqlParserBaseVisitor visitor = new CSqlParserBaseVisitor();
-//        tree.accept(visitor);
-        ParseTreeWalker walker = new ParseTreeWalker();
-        CSqlWalkListener listener = new CSqlWalkListener();
-        walker.walk(listener, tree);
-        System.out.println(tree.toStringTree(parser)); //打印规则数
+//        CSqlLexer lexer = new CSqlLexer(CharStreams.fromString(sql));
+//        CSqlParser parser = new CSqlParser(new CommonTokenStream(lexer));
+//
+//        ParseTree tree = parser.sqlStatements();
+//
+////        CSqlParserBaseVisitor visitor = new CSqlParserBaseVisitor();
+////        tree.accept(visitor);
+//        ParseTreeWalker walker = new ParseTreeWalker();
+//        CSqlWalkListener listener = new CSqlWalkListener();
+//        walker.walk(listener, tree);
+//        System.out.println(tree.toStringTree(parser)); //打印规则数
 
     }
 }

@@ -20,6 +20,8 @@
         <junit.version>4.12</junit.version>
         <drill.version>1.19.0</drill.version>
         <calcite.version>1.19.0</calcite.version>
+
+        <javacc-plugin.version>2.6</javacc-plugin.version>
     </properties>
 
     <dependencies>
@@ -57,34 +59,77 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${antlr.version}</version>
-                <executions>
-                    <execution>
-                        <id>antlr</id>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
                 <configuration>
-                    <outputDirectory>src/test/java</outputDirectory>
-                    <listener>true</listener>
-                    <treatWarningsAsErrors>true</treatWarningsAsErrors>
+                    <source>1.8</source>
+                    <target>1.8</target>
+<!--                    <includes>-->
+<!--                        <include>**/**.ftl</include>-->
+<!--                        <include>**/**.jj</include>-->
+<!--                        <include>**.fmpp</include>-->
+<!--                    </includes>-->
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>javacc-maven-plugin</artifactId>
+                <version>${javacc-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>javacc</id>
+                        <goals>
+                            <goal>javacc</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.build.directory}/generated-sources/fmpp</sourceDirectory>
+                            <includes>
+                                <include>**/Parser.jj</include>
+                            </includes>
+                            <lookAhead>2</lookAhead>
+                            <isStatic>false</isStatic>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>javacc-test</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>javacc</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.build.directory}/generated-test-sources/fmpp</sourceDirectory>
+                            <outputDirectory>${project.build.directory}/generated-test-sources/javacc</outputDirectory>
+                            <includes>
+                                <include>**/Parser.jj</include>
+                            </includes>
+                            <lookAhead>2</lookAhead>
+                            <isStatic>false</isStatic>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.drill.tools</groupId>
+                <artifactId>drill-fmpp-maven-plugin</artifactId>
+                <version>1.17.0</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <config>src/main/codegen/config.fmpp</config>
+                            <output>${project.build.directory}/generated-sources/fmpp</output>
+                            <templates>src/main/codegen/templates</templates>
+                        </configuration>
+                        <id>generate-fmpp-sources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.drill.tools</groupId>
-                    <artifactId>drill-fmpp-maven-plugin</artifactId>
-                    <version>${drill.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
+
 
 </project>
