@@ -5,4 +5,8 @@ package fun.langel.cql.datasource;
  * @since 2022/3/18 17:06
  **/
 public class JdbcDataSource implements DataSource {
+    @Override
+    public DataSourceType type() {
+        return DataSourceType.MYSQL;
+    }
 }

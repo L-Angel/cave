@@ -26,7 +26,7 @@ public class CalciteTest {
     @Test
     public void testSqlParse() throws SqlParseException {
         final String sql1 = "select * from table1 where field1=${value1} and field2=${value2} order by ${value1}";
-        final String sql2 = "select * from table2 where field1 = 1  order by field2 asc limit 1,100";
+        final String sql2 = "select * from table2 where field1 = 1  order by field2 desc limit 1,100";
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
 
         final FrameworkConfig config = Frameworks.newConfigBuilder()
@@ -49,7 +49,8 @@ public class CalciteTest {
 
     @Test
     public void cqlParseTest() throws SqlParseException {
-        final String sql = "select field1,field2 from table2 where field1 = 1 and field2 = 'value2'order by field2 asc limit 1,100";
+        final String sql = "select field1 as f1,field2 f2 from table2 where field1 = 1 and field2 = 'value2' and " +
+                "gmt_created between '2021-01-01 00:00:00' and '2022-01-01 00:00:00' and (field3 > 12 or field3=44) and field4 in(1,2,3,4) order by field2 asc limit 1,100";
         Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
 
 

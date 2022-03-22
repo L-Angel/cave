@@ -1,10 +1,7 @@
 package fun.langel.cql.antlr;
 
 
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -32,7 +29,7 @@ public class AntlrTest {
                 " select s.name as ship_name, sc.class_name, sc.tonange, sc.max_length, sc.start_build, sc.max_guns_size " +
                 " from " +
                 "  ships s inner join ship_class sc on s.class_id = sc.id " +
-                " ) ship_info using (ship_name) " +
+                " ) ship_info using (ship_nazxozOme) " +
                 " order by ship_power.ship_name;";
 
         String sql2 = "Select 'abc' as a, `hahah` as c  From a aS table;";

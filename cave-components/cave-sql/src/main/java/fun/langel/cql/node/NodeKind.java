@@ -2,75 +2,94 @@ package fun.langel.cql.node;
 
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlOrderBy;
 
-import java.util.Objects;
+import java.util.EnumSet;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/3/18 14:51
  **/
-public class NodeKind {
+public enum NodeKind {
 
-    public static NodeKind SELECT = new NodeKind("select", false);
+    SELECT,
 
-    public static NodeKind UPDATE = new NodeKind("select", false);
+    UPDATE,
 
-    public static NodeKind DELETE = new NodeKind("select", false);
+    DELETE,
 
-    public static NodeKind INSERT = new NodeKind("select", false);
+    INSERT,
 
-    public static NodeKind NONE = new NodeKind("none", false);
+    NONE,
 
-    private final String kind;
+    BETWEEN,
 
-    private final boolean ordered;
+    LIMIT,
 
-    public NodeKind(final String kind,
-                    final boolean ordered) {
-        this.kind = kind;
-        this.ordered = ordered;
+    ORDER_BY,
+
+    FIELD,
+
+    COUNT,
+
+    AVG,
+
+    AND,
+
+    OR,
+
+    LESS_THAN("<"),
+
+    LESS_THAN_OR_EQUAL("<="),
+
+    GREATER_THAN(">"),
+
+    GREATER_THAN_OR_EQUAL(">="),
+
+    EQUALS("="),
+
+    NOT_EQUALS("<>"),
+
+    LIKE,
+
+    IN,
+
+    NOT_IN,
+
+    VALUE;
+
+
+    public static final EnumSet<NodeKind> COMPARISON = EnumSet.of(LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL, EQUALS, NOT_EQUALS);
+
+    private String sql;
+
+    NodeKind() {
+        this.sql = null;
+    }
+
+    NodeKind(final String sql) {
+        this.sql = sql;
+    }
+
+    public String sql() {
+        return this.sql;
     }
 
 
-    public String kindName() {
-        return this.kind;
-    }
-
-    public boolean ordered() {
-        return this.ordered;
-    }
-
-    public static NodeKind of(final SqlNode node) {
-        if (node.getKind() == SqlKind.SELECT) {
-            return new NodeKind("select", false);
-        }
-        if (node.getKind() == SqlKind.ORDER_BY) {
-            SqlOrderBy sob = (SqlOrderBy) node;
-            return new NodeKind("select", true);
-        }
-        if (node.getKind() == SqlKind.INSERT) {
-            return new NodeKind("insert", false);
-        }
-        if (node.getKind() == SqlKind.UPDATE) {
-            return new NodeKind("update", false);
-        }
-        if (node.getKind() == SqlKind.DELETE) {
-            return new NodeKind("delete", false);
+    public static NodeKind of(final SqlKind sk) {
+        for (NodeKind nk : values()) {
+            if (nk.name().equalsIgnoreCase(sk.lowerName)) {
+                return nk;
+            }
         }
         return NONE;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        NodeKind nodeKind = (NodeKind) o;
-        return Objects.equals(kind, nodeKind.kind);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(kind);
+    public static NodeKind of(final SqlNode node) {
+        for (NodeKind nk : values()) {
+            if (nk.name().equalsIgnoreCase(node.getKind().lowerName)) {
+                return nk;
+            }
+        }
+        return NONE;
     }
 }
