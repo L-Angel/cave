@@ -17,18 +17,27 @@ public class SelectSqlResolver implements SqlResolver<SqlSelect, Select> {
 
     @Override
     public Select resolve(SqlSelect select) {
-        List<Column> cols = new LinkedList<>();
-        select.getSelectList().forEach(s -> {
-            String[] f = s.toString().split("AS");
-            cols.add(new Column(f[0], f[1]));
-        });
-        return new Select(cols, select.getFrom().toString(), resolveTree((SqlBasicCall) select.getWhere()), null, null);
+
+        return new Select(resolveColumns(select.getSelectList()), select.getFrom().toString(),
+                resolveConditionTree((SqlBasicCall) select.getWhere()), null, null,
+                resolveColumns(select.getGroup()), resolveConditionTree((SqlBasicCall) select.getHaving()));
     }
 
-    private Node resolveTree(SqlBasicCall bc) {
+    private List<Column> resolveColumns(SqlNodeList nodes) {
+        List<Column> cols = new LinkedList<>();
+        nodes.forEach(s -> {
+            String[] f = s.toString().split("AS");
+            cols.add(new Column(f[0], f.length == 2 ? f[1] : f[0]));
+
+        });
+        return cols;
+    }
+
+    private Node resolveConditionTree(SqlBasicCall bc) {
         SqlKind sk = bc.getKind();
         if (sk == SqlKind.OR || sk == SqlKind.AND) {
-            return new BinaryOpNode(NodeKind.of(sk), resolveTree((SqlBasicCall) bc.getOperands()[0]), resolveTree((SqlBasicCall) bc.getOperands()[1]));
+            return new BinaryOpNode(NodeKind.of(sk), resolveConditionTree((SqlBasicCall) bc.getOperands()[0]),
+                    resolveConditionTree((SqlBasicCall) bc.getOperands()[1]));
         } else if (sk == SqlKind.LESS_THAN || sk == SqlKind.LESS_THAN_OR_EQUAL
                 || sk == SqlKind.GREATER_THAN || sk == SqlKind.GREATER_THAN_OR_EQUAL
                 || sk == SqlKind.EQUALS) {

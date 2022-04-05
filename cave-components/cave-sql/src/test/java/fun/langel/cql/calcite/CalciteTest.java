@@ -3,6 +3,7 @@ package fun.langel.cql.calcite;
 import fun.langel.cql.Cql;
 import fun.langel.cql.Language;
 import fun.langel.cql.calcite.config.Lex;
+import fun.langel.cql.dialect.Dialect;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -48,11 +49,17 @@ public class CalciteTest {
     }
 
     @Test
-    public void cqlParseTest() throws SqlParseException {
+    public void test_select() throws SqlParseException {
         final String sql = "select field1 as f1,field2 f2 from table2 where field1 = 1 and field2 = 'value2' and " +
                 "gmt_created between '2021-01-01 00:00:00' and '2022-01-01 00:00:00' and (field3 > 12 or field3=44) and field4 in(1,2,3,4) order by field2 asc limit 1,100";
         Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
+    }
 
+    @Test
+    public void test_group_by() throws SqlParseException {
+        final String sql = "select count(field1), field1,field2 from table1 where field3='abc' group by field1,field2 having field2 ='a1'";
 
+        Dialect dialect = Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
+        System.out.println(dialect);
     }
 }

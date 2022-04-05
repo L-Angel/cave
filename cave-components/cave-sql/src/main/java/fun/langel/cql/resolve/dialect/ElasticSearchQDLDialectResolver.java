@@ -20,9 +20,10 @@ public class ElasticSearchQDLDialectResolver implements DialectResolver<Select, 
     @Override
     public SearchRequest resolve(Select sqlNode) {
         SearchSourceBuilder ssb = new SearchSourceBuilder();
-        ssb.from((int) sqlNode.limit().offset());
-        ssb.size((int) sqlNode.limit().fetch());
-
+        if (sqlNode.limit() != null) {
+            ssb.from((int) sqlNode.limit().offset());
+            ssb.size((int) sqlNode.limit().fetch());
+        }
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
         qb.must().addAll(resolveQueryCondition(sqlNode.where()));
         ssb.query(qb);

@@ -18,12 +18,27 @@ public class Select implements Node {
 
     private Limit limit;
 
+    private List<Column> groupBy;
+
+    private Node having;
+
     public Select(List<Column> columns, final String from, Node where, OrderBy orderBy, Limit limit) {
         this.columns = columns;
         this.where = where;
         this.from = from;
         this.orderBy = orderBy;
         this.limit = limit;
+    }
+
+    public Select(List<Column> columns, final String from, Node where, OrderBy orderBy,
+                  Limit limit, List<Column> groupBy, Node having) {
+        this.columns = columns;
+        this.where = where;
+        this.from = from;
+        this.orderBy = orderBy;
+        this.limit = limit;
+        this.groupBy = groupBy;
+        this.having = having;
     }
 
     public List<Column> columns() {
@@ -54,6 +69,14 @@ public class Select implements Node {
 
     public String from() {
         return from;
+    }
+
+    public Node having() {
+        return this.having;
+    }
+
+    public List<Column> groupBy() {
+        return this.groupBy;
     }
 
     @Override
