@@ -5,6 +5,7 @@ import fun.langel.cql.resolve.SqlResolver;
 import fun.langel.cql.util.StringUtil;
 import org.apache.calcite.sql.*;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,11 +25,13 @@ public class SelectSqlResolver implements SqlResolver<SqlSelect, Select> {
     }
 
     private List<Column> resolveColumns(SqlNodeList nodes) {
+        if (nodes == null) {
+            return Collections.emptyList();
+        }
         List<Column> cols = new LinkedList<>();
         nodes.forEach(s -> {
             String[] f = s.toString().split("AS");
             cols.add(new Column(f[0], f.length == 2 ? f[1] : f[0]));
-
         });
         return cols;
     }

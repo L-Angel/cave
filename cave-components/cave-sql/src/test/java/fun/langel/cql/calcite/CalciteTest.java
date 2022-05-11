@@ -58,8 +58,22 @@ public class CalciteTest {
     @Test
     public void test_group_by() throws SqlParseException {
         final String sql = "select count(field1), field1,field2 from table1 where field3='abc' group by field1,field2 having field2 ='a1'";
-
         Dialect dialect = Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
         System.out.println(dialect);
     }
+
+    @Test
+    public void test_parameter() throws SqlParseException {
+        final String sql = "select field1 from table1 where field1 = ${param1}";
+        Dialect dialect = Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
+        System.out.println(dialect);
+    }
+
+    @Test
+    public void test_select_param() throws SqlParseException {
+        final String sql = "select field1,field2,field3 from table1 where field1=?";
+        Dialect dialect = Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
+        System.out.println(dialect);
+    }
+
 }

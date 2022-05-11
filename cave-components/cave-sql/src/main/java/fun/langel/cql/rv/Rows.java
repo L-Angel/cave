@@ -11,6 +11,9 @@ public class Rows implements ReturnValue<List<Row>> {
 
     private final List<Row> rows = new LinkedList<>();
 
+    private long size;
+
+    public static final Rows EMPTY = new Rows();
 
     public Rows() {
         this(null);
@@ -21,6 +24,18 @@ public class Rows implements ReturnValue<List<Row>> {
             return;
         }
         this.rows.addAll(rows);
+    }
+
+    public void add(final Row row) {
+        this.rows.add(row);
+    }
+
+    public void setSize(final long size) {
+        this.size = size;
+    }
+
+    public long size() {
+        return this.size;
     }
 
     @Override

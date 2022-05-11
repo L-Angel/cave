@@ -6,7 +6,6 @@ import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.dialect.Mysql;
 import fun.langel.cql.node.Node;
 import fun.langel.cql.node.Select;
-import fun.langel.cql.resolve.DialectResolver;
 import fun.langel.cql.resolve.SqlResolver;
 import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
 import fun.langel.cql.resolve.sql.DefaultSqlResolver;
@@ -35,11 +34,10 @@ public class Cql {
                     .build())
             .build();
 
-
     /**
      * @param sql    Standard Mysql 5.7 grammar.
      * @param target The target language type.
-     * @return System Dialect
+     * @return System Di·alect
      * @throws SqlParseException
      */
     public static Dialect parse(String sql, Language target) throws SqlParseException {
@@ -64,6 +62,5 @@ public class Cql {
         System.out.println(sr);
         return null;
     }
-
 
 }

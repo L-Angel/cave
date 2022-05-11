@@ -18,4 +18,29 @@ public class Result {
     public Object getValue() {
         return this.value;
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+
+    public static class Builder {
+
+        private Object value;
+
+
+        private Builder() {
+        }
+
+        public Builder setValue(final Object value) {
+            this.value = value;
+            return this;
+        }
+
+        public Result build() {
+            final Result r = new Result();
+            r.setValue(this.value);
+            return r;
+        }
+    }
 }

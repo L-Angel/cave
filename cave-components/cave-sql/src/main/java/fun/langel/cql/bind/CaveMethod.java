@@ -1,7 +1,7 @@
 package fun.langel.cql.bind;
 
 import fun.langel.cql.annotation.*;
-import fun.langel.cql.datasource.DataSource;
+import fun.langel.cql.datasource.Datasource;
 import fun.langel.cql.invoke.Invocation;
 import fun.langel.cql.invoke.Invoker;
 import fun.langel.cql.invoke.Result;
@@ -35,7 +35,7 @@ public class CaveMethod {
         checkArguments(args);
 
         Target target = target(args);
-
+        Datasource ds = null;
         Invoker invoker = Invoker.EMPTY;
         if (this.signature.isSelect()) {
             invoker = new SelectInvoker(target, this.signature.sql());
@@ -52,7 +52,7 @@ public class CaveMethod {
 
     private void checkArguments(Object... args) {
         if (args.length < 0) {
-            throw new IllegalArgumentException("illegal argument size.");
+            throw new IllegalArgumentException("Illegal argument size.");
         }
     }
 
@@ -67,11 +67,6 @@ public class CaveMethod {
             @Override
             public String name() {
                 return null;
-            }
-
-            @Override
-            public DataSource dataSource() {
-                return DataSource.EMPTY;
             }
         };
     }

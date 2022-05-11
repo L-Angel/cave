@@ -52,7 +52,6 @@ public class Select implements Node {
     public OrderBy orderBy() {
         return this.orderBy;
     }
-
     public Select orderByWith(OrderBy ob) {
         this.orderBy = ob;
         return this;

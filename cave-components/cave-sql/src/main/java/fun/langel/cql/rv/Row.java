@@ -9,7 +9,7 @@ import java.util.Map;
  **/
 public class Row implements ReturnValue<Map<String, Object>> {
 
-    private Map<String, Object> columns = new HashMap<>();
+    private final Map<String, Object> columns = new HashMap<>();
 
     public Row() {
         this(null);
@@ -20,6 +20,10 @@ public class Row implements ReturnValue<Map<String, Object>> {
             return;
         }
         this.columns.putAll(cols);
+    }
+
+    public void put(final String k, Object v) {
+        this.columns.put(k, v);
     }
 
     @Override

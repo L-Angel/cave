@@ -1,5 +1,7 @@
 package fun.langel.cql.annotation;
 
+import fun.langel.cql.enums.Mode;
+
 import java.lang.annotation.*;
 
 /**
@@ -11,4 +13,8 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 public @interface Delete {
     String sql();
+
+    Mode mode() default Mode.DIRECT;
+
+    Class<?> direct() default Object.class;
 }
