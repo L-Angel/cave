@@ -2,8 +2,7 @@ package fun.langel.cql.node;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
- * @since 2022/3/21 04:38
+ * @since 2022/7/20 19:37
  **/
-public interface Node {
-
+public interface Operator extends Node {
 }

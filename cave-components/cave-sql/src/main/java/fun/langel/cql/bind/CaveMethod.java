@@ -9,9 +9,13 @@ import fun.langel.cql.invoke.support.DeleteInvoker;
 import fun.langel.cql.invoke.support.InsertInvoker;
 import fun.langel.cql.invoke.support.SelectInvoker;
 import fun.langel.cql.invoke.support.UpdateInvoker;
+import fun.langel.cql.parameter.Parameter;
+import fun.langel.cql.parameter.ParameterResolver;
 import fun.langel.cql.parameter.Target;
+import fun.langel.cql.util.Pair;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -37,6 +41,9 @@ public class CaveMethod {
         Target target = target(args);
         Datasource ds = null;
         Invoker invoker = Invoker.EMPTY;
+        ParameterResolver resolver = new ParameterResolver();
+        Pair<String, List<Parameter>> pair = resolver.resolve(this.signature.sql());
+
         if (this.signature.isSelect()) {
             invoker = new SelectInvoker(target, this.signature.sql());
         } else if (this.signature.isDelete()) {

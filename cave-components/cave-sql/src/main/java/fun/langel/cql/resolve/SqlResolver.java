@@ -1,11 +1,7 @@
 package fun.langel.cql.resolve;
 
 import fun.langel.cql.node.Node;
-import fun.langel.cql.node.NoneNode;
-import fun.langel.cql.node.Select;
 import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlOrderBy;
-import org.apache.calcite.sql.SqlSelect;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)

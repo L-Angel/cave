@@ -16,7 +16,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
 
-        <antlr.version>4.9.2</antlr.version>
+        <antlr.version>4.10.1</antlr.version>
         <junit.version>4.12</junit.version>
         <drill.version>1.19.0</drill.version>
         <calcite.version>1.19.0</calcite.version>
@@ -35,6 +35,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>${antlr.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
@@ -70,6 +75,34 @@
     </dependencyManagement>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>${antlr.version}</version>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <!--指定导入语法和标记文件的位置。-->
+                    <libDirectory>src/main/antlr4/imports</libDirectory>
+                    <!--ANTLR语法文件(*.g4)所在的目录。-->
+                    <sourceDirectory>src/main/antlr4</sourceDirectory>
+                    <!--指定生成Java文件的输出目录。-->
+                    <outputDirectory>src/main/java</outputDirectory>
+                    <!--生成解析树侦听器接口和基类。-->
+                    <listener>true</listener>
+                    <!--生成解析树访问者接口和基类。-->
+                    <visitor>true</visitor>
+                    <treatWarningsAsErrors>true</treatWarningsAsErrors>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
