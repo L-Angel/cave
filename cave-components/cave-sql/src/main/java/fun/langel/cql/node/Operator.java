@@ -5,4 +5,7 @@ package fun.langel.cql.node;
  * @since 2022/7/20 19:37
  **/
 public interface Operator extends Node {
+
+    public static class Equals implements Operator {
+    }
 }
