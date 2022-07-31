@@ -2,14 +2,14 @@ package fun.langel.cql.statement;
 
 import fun.langel.cql.node.Expr;
 import fun.langel.cql.node.Table;
+import fun.langel.cql.statement.Statement;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
- * @since 2022/7/20 19:27
+ * @since 2022/7/31 20:44
  **/
-public class SelectStatement implements Statement {
+public interface SelectStatement extends Statement {
+    Expr where();
 
-    private Expr condition;
-
-    private Table table;
+    Table table();
 }

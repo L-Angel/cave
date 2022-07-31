@@ -23,7 +23,7 @@ public class CqlTest {
 
     @Test
     public void testParse_testCondition1() throws IOException {
-        final String sql = "select field1 as f1 from table1 where f1='b' and f2 is not null and f3 <> 'c'";
+        final String sql = "select field1 as f1 from table1 where f1='b' and f2 is not null and f3 <> 'c' and field4 between 1 and 2";
         Cql.parse(sql, Language.QDL_ELASTIC_SEARCH);
     }
 }

@@ -5,6 +5,7 @@ import fun.langel.cql.antlr4.CqlParser;
 import fun.langel.cql.antlr4.DefaultCqlParserVisitor;
 import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.dialect.ElasticSearchQDL;
+import fun.langel.cql.node.Node;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -58,7 +59,7 @@ public class Cql {
         CqlLexer lexer = new CqlLexer(CharStreams.fromString(sql.toUpperCase()));
         CqlParser parser = new CqlParser(new CommonTokenStream(lexer));
         DefaultCqlParserVisitor visitor = new DefaultCqlParserVisitor();
-        visitor.visit(parser.root());
+        Node rootNode = visitor.visit(parser.root());
         return new ElasticSearchQDL();
     }
 }

@@ -1,13 +1,17 @@
 package fun.langel.cql.antlr4;
 
-import com.jayway.jsonpath.internal.filter.LogicalOperator;
 import fun.langel.cql.antlr4.CqlParser.SqlStatementContext;
 import fun.langel.cql.exception.SqlException;
-import fun.langel.cql.node.Expr;
-import fun.langel.cql.node.Node;
-import fun.langel.cql.node.Terminal;
+import fun.langel.cql.node.*;
+import fun.langel.cql.node.operator.LogicalOperator;
+import fun.langel.cql.node.operator.Operator;
+import fun.langel.cql.node.operator.RelOperator;
 import fun.langel.cql.statement.*;
+import fun.langel.cql.statement.impl.DeleteStatementImpl;
+import fun.langel.cql.statement.impl.SelectStatementImpl;
 import fun.langel.cql.util.StringUtil;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -20,6 +24,15 @@ import java.util.Objects;
  * @since 2022/7/18 17:20
  **/
 public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implements CqlParserVisitor<Node> {
+    @Override
+    public Node visit(ParseTree tree) {
+        return visitRoot((CqlParser.RootContext) tree);
+    }
+
+    @Override
+    public Node visitRoot(CqlParser.RootContext ctx) {
+        return visitSqlStatements(ctx.sqlStatements());
+    }
 
     @Override
     public Statements visitSqlStatements(CqlParser.SqlStatementsContext ctx) {
@@ -42,69 +55,100 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
             for (int idx = 0, len = ctx.getChildCount(); idx < len; idx++) {
                 ParseTree pt = ctx.getChild(idx);
                 if (pt instanceof CqlParser.SimpleSelectContext) {
-                    Node node = visitSimpleSelect((CqlParser.SimpleSelectContext) pt);
-                    System.out.println(node);
+                    return visitSimpleSelect((CqlParser.SimpleSelectContext) pt);
                 }
             }
         } else if (Objects.nonNull(ctx.deleteStatement())) {
-            return new DeleteStatement();
+            return new DeleteStatementImpl();
         }
         return new EmptyStatement();
     }
 
     @Override
-    public Node visitSimpleSelect(CqlParser.SimpleSelectContext ctx) {
+    public SelectStatement visitSimpleSelect(CqlParser.SimpleSelectContext ctx) {
 
         for (int idx = 0, len = ctx.getChildCount(); idx < len; idx++) {
             ParseTree pt = ctx.getChild(idx);
             if (pt instanceof CqlParser.QuerySpecificationContext) {
-                Node node = visitQuerySpecification((CqlParser.QuerySpecificationContext) pt);
-                System.out.println(node);
+                return visitQuerySpecification((CqlParser.QuerySpecificationContext) pt);
             }
         }
-        return super.visitSimpleSelect(ctx);
+        return new EmptyStatement();
     }
 
     @Override
-    public Node visitQuerySpecification(CqlParser.QuerySpecificationContext ctx) {
+    public SelectStatement visitQuerySpecification(CqlParser.QuerySpecificationContext ctx) {
 
+        SelectStatementImpl statement = new SelectStatementImpl();
         for (int idx = 0, len = ctx.getChildCount(); idx < len; idx++) {
             ParseTree pt = ctx.getChild(idx);
             if (pt instanceof TerminalNode) {
                 System.out.println(pt.getText());
+            } else if (pt instanceof CqlParser.SelectElementsContext) {
+                System.out.println(pt);
             } else if (pt instanceof CqlParser.FromClauseContext) {
-                visitFromClause((CqlParser.FromClauseContext) pt);
+                statement.setFrom(visitFromClause((CqlParser.FromClauseContext) pt));
             }
         }
-        return super.visitQuerySpecification(ctx);
+        return statement;
     }
 
     @Override
-    public Node visitFromClause(CqlParser.FromClauseContext ctx) {
+    public From visitFromClause(CqlParser.FromClauseContext ctx) {
         CqlParser.ExpressionContext wExpr = ctx.whereExpr;
+        CqlParser.TableSourcesContext source = ctx.tableSources();
+        Expr where = null;
+        Table table = null;
         if (wExpr instanceof CqlParser.LogicalExpressionContext) {
             CqlParser.LogicalExpressionContext logicWExpr = (CqlParser.LogicalExpressionContext) wExpr;
-            CqlParser.LogicalOperatorContext operator = logicWExpr.logicalOperator();
-
+            where = visitExpr(logicWExpr);
         }
-        return super.visitFromClause(ctx);
+        if (source != null) {
+            table = new Table(source.getText(), null);
+        }
+        return new From(table, where);
     }
 
-    private Expr visitExpr(CqlParser.LogicalExpressionContext expression) {
-        if (expression.children.size() == 3) {
-            ParseTree left = expression.getChild(0);
-            ParseTree logical = expression.getChild(1);
-            ParseTree right = expression.getChild(2);
-            if (left instanceof CqlParser.LogicalExpressionContext) {
-
-            }
-            if (right instanceof CqlParser.LogicalExpressionContext) {
-
-            }
-        } else {
-            throw new SqlException("Illegal sql logical expression grammar!");
+    private Expr visitExpr(ParseTree tree) {
+        if (tree instanceof CqlParser.PredicateExpressionContext) {
+            return visitExpr(tree.getChild(0));
         }
-        return new Terminal();
+        if (tree instanceof CqlParser.BinaryComparisonPredicateContext) {
+            return visitBinaryComparisonPredicate((CqlParser.BinaryComparisonPredicateContext) tree);
+        }
+        if (tree instanceof CqlParser.IsNullPredicateContext) {
+            return visitIsNullPredicate((CqlParser.IsNullPredicateContext) tree);
+        }
+        if (tree instanceof CqlParser.BetweenPredicateContext) {
+            return visitBetweenPredicate((CqlParser.BetweenPredicateContext) tree);
+        }
+        if (tree.getChildCount() == 3) {
+            ParseTree left = tree.getChild(0);
+            ParseTree logical = tree.getChild(1);
+            ParseTree right = tree.getChild(2);
+            Node l = visitExpr(left);
+            Operator operator = LogicalOperator.of(logical.getText());
+            Node r = visitExpr(right);
+            return new ExprImpl(l, operator, r);
+        } else {
+            throw new SqlException("Illegal sql expression grammar!");
+        }
+    }
+
+    @Override
+    public Expr visitBinaryComparisonPredicate(CqlParser.BinaryComparisonPredicateContext node) {
+        return new ExprImpl(new Column(node.left.getText(), null), RelOperator.of(node.comparisonOperator().getText()), new Value(node.right.getText(), false, false));
+    }
+
+    @Override
+    public Expr visitIsNullPredicate(CqlParser.IsNullPredicateContext ctx) {
+        String value = ctx.getChild(2).getText();
+        return new ExprImpl(new Column(ctx.getChild(0).getText(), null), RelOperator.IS, new Value(null, "null".equalsIgnoreCase(value), "notnull".equalsIgnoreCase(value)));
+    }
+
+    @Override
+    public Expr visitBetweenPredicate(CqlParser.BetweenPredicateContext ctx) {
+        return new ExprImpl(new Column(ctx.getChild(0).getText(), null), new Value(ctx.getChild(2).getText(), false, false), new Value(ctx.getChild(4).getText(), false, false));
     }
 
     @Override

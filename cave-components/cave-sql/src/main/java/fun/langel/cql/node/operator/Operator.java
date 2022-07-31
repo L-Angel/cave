@@ -1,4 +1,6 @@
-package fun.langel.cql.node;
+package fun.langel.cql.node.operator;
+
+import fun.langel.cql.node.Node;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -6,6 +8,10 @@ package fun.langel.cql.node;
  **/
 public interface Operator extends Node {
 
-    public static class Equals implements Operator {
+
+
+    public static class None implements Operator{
     }
+
+
 }
