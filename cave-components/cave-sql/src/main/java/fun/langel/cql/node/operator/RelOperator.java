@@ -10,6 +10,10 @@ public enum RelOperator implements Operator {
 
     NONE,
     IS,
+    IN,
+    LIKE,
+    NOT_LIKE,
+    NOT_IN,
     EQUAL,
     NOT_EQUAL,
     GREATER,
@@ -22,6 +26,20 @@ public enum RelOperator implements Operator {
             return NONE;
         }
         o = StringUtil.trim(o);
+        if ("in".equalsIgnoreCase(o)) {
+            return IN;
+        }
+        if ("notin".equalsIgnoreCase(o)) {
+            return NOT_IN;
+        }
+
+        if ("like".equalsIgnoreCase(o)) {
+            return LIKE;
+        }
+        if ("notlike".equalsIgnoreCase(o)) {
+            return NOT_LIKE;
+        }
+
         if ("is".equalsIgnoreCase(o)) {
             return IS;
         }

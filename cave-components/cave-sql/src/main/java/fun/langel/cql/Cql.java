@@ -6,6 +6,11 @@ import fun.langel.cql.antlr4.DefaultCqlParserVisitor;
 import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.dialect.ElasticSearchQDL;
 import fun.langel.cql.node.Node;
+import fun.langel.cql.resolve.DialectResolver;
+import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
+import fun.langel.cql.statement.SelectStatement;
+import fun.langel.cql.statement.Statement;
+import fun.langel.cql.statement.Statements;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -59,7 +64,19 @@ public class Cql {
         CqlLexer lexer = new CqlLexer(CharStreams.fromString(sql.toUpperCase()));
         CqlParser parser = new CqlParser(new CommonTokenStream(lexer));
         DefaultCqlParserVisitor visitor = new DefaultCqlParserVisitor();
-        Node rootNode = visitor.visit(parser.root());
+        Statements statements = visitor.visit(parser.root());
+        DialectResolver resolver = null;
+        if (target == Language.QDL_ELASTIC_SEARCH) {
+            resolver = new ElasticSearchQDLDialectResolver();
+
+        }
+        for (Statement statement : statements) {
+            if (statement instanceof SelectStatement) {
+                Object r = resolver.resolve(statement);
+                System.out.println(r);
+
+            }
+        }
         return new ElasticSearchQDL();
     }
 }

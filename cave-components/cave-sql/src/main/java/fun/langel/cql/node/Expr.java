@@ -10,7 +10,7 @@ public interface Expr extends Node {
 
 
     default Node left() {
-        return new Column(null, null);
+        return Column.of(null);
     }
 
     default Operator operator() {
