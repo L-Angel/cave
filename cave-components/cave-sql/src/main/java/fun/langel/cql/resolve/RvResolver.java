@@ -5,5 +5,5 @@ package fun.langel.cql.resolve;
  * @since 2022/4/26 17:16
  **/
 public interface RvResolver<F, T> {
-    T resolve(F from);
+    T resolve(F from, Class<T> klass);
 }

@@ -1,5 +1,7 @@
 package fun.langel.cql.resolve.dialect;
 
+import fun.langel.cql.dialect.Dialect;
+import fun.langel.cql.dialect.ElasticSearchQDL;
 import fun.langel.cql.node.*;
 import fun.langel.cql.node.operator.BetweenOperator;
 import fun.langel.cql.node.operator.LogicalOperator;
@@ -25,10 +27,10 @@ import java.util.stream.Collectors;
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/3/21 20:59
  **/
-public class ElasticSearchQDLDialectResolver implements DialectResolver<SelectStatement, SearchRequest> {
+public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectResolver<SelectStatement, SearchRequest> {
 
     @Override
-    public SearchRequest resolve(SelectStatement statement) {
+    public Dialect<SearchRequest> resolve(SelectStatement statement) {
         SearchSourceBuilder ssb = new SearchSourceBuilder();
         if (statement.limit() != null) {
             ssb.from(statement.limit().offset());
@@ -42,7 +44,7 @@ public class ElasticSearchQDLDialectResolver implements DialectResolver<SelectSt
         SearchRequest sr = new SearchRequest(ListUtil.toStringArray(tables));
         sr.searchType(SearchType.DEFAULT);
         sr.source(ssb);
-        return sr;
+        return new ElasticSearchQDL(sr);
     }
 
     private List<QueryBuilder> resolveQueryCondition(Expr expr) {

@@ -4,17 +4,17 @@ import fun.langel.cql.antlr4.CqlLexer;
 import fun.langel.cql.antlr4.CqlParser;
 import fun.langel.cql.antlr4.DefaultCqlParserVisitor;
 import fun.langel.cql.dialect.Dialect;
-import fun.langel.cql.dialect.ElasticSearchQDL;
-import fun.langel.cql.node.Node;
-import fun.langel.cql.resolve.DialectResolver;
+import fun.langel.cql.parameter.Parameter;
+import fun.langel.cql.parameter.ParameterResolver;
 import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.statement.Statement;
 import fun.langel.cql.statement.Statements;
+import fun.langel.cql.util.Pair;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import java.io.IOException;
+import java.util.List;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -22,61 +22,26 @@ import java.io.IOException;
  **/
 public class Cql {
 
-    // private static final FrameworkConfig CALCITE_CONFIG = Frameworks.newConfigBuilder()
-    //         .parserConfig(Calcite.configBuilder()
-    //                 .setLex(Lex.CAVE_SQL)
-    //                 .setParserFactory(SqlParserImpl.FACTORY)
-    //                 .setConformance(SqlConformanceEnum.MYSQL_5)
-    //                 .build())
-    //         .build();
-    //
-    // /**
-    //  * @param sql    Standard Mysql 5.7 grammar.
-    //  * @param target The target language type.
-    //  * @return System Di·alect
-    //  * @throws SqlParseException
-    //  */
-    // public static Dialect parse(String sql, Language target) throws SqlParseException {
-    //     if (target == Language.MYSQL) {
-    //         return new Mysql(sql);
-    //     }
-    //
-    //     SqlNode sqlNode = SqlParser.create(sql, CALCITE_CONFIG.getParserConfig()).parseStmt();
-    //     SqlKind kind = sqlNode.getKind();
-    //     SqlResolver resolver;
-    //     if (kind == SqlKind.SELECT) {
-    //         resolver = new SelectSqlResolver();
-    //     } else if (kind == SqlKind.ORDER_BY) {
-    //         resolver = new OrderBySqlResolver();
-    //     } else {
-    //         resolver = new DefaultSqlResolver();
-    //     }
-    //     Node node = resolver.resolve(sqlNode);
-    //
-    //     final ElasticSearchQDLDialectResolver dialectResolver = new ElasticSearchQDLDialectResolver();
-    //     SearchRequest sr = dialectResolver.resolve((Select) node);
-    //     System.out.println(sr);
-    //     return null;
-    // }
+    private final static ParameterResolver parameterResolver = new ParameterResolver();
 
+    public static <D> Dialect<D> parse(final String sql, Language target) {
+        Statements statements = parse(sql);
 
-    public static Dialect parse(final String sql, Language target) throws IOException {
-        CqlLexer lexer = new CqlLexer(CharStreams.fromString(sql.toUpperCase()));
-        CqlParser parser = new CqlParser(new CommonTokenStream(lexer));
-        DefaultCqlParserVisitor visitor = new DefaultCqlParserVisitor();
-        Statements statements = visitor.visit(parser.root());
-        DialectResolver resolver = null;
-        if (target == Language.QDL_ELASTIC_SEARCH) {
-            resolver = new ElasticSearchQDLDialectResolver();
-
-        }
-        for (Statement statement : statements) {
-            if (statement instanceof SelectStatement) {
-                Object r = resolver.resolve(statement);
-                System.out.println(r);
-
+        for (Statement stat : statements) {
+            if (stat instanceof SelectStatement) {
+                if (target == Language.ELASTIC_SEARCH) {
+                    return (Dialect<D>) new ElasticSearchQDLDialectResolver().resolve((SelectStatement) stat);
+                }
             }
         }
-        return new ElasticSearchQDL();
+        return null;
+    }
+
+    public static Statements parse(final String sql) {
+        Pair<String, List<Parameter>> pair = parameterResolver.resolve(sql);
+        CqlLexer lexer = new CqlLexer(CharStreams.fromString(pair.left().toUpperCase()));
+        CqlParser parser = new CqlParser(new CommonTokenStream(lexer));
+        DefaultCqlParserVisitor visitor = new DefaultCqlParserVisitor();
+        return visitor.visit(parser.root());
     }
 }

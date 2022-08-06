@@ -6,7 +6,7 @@ import fun.langel.cql.Language;
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/3/18 16:45
  **/
-public class Mysql implements Dialect {
+public class Mysql implements Dialect<String> {
 
     private final String origin;
 
@@ -20,7 +20,9 @@ public class Mysql implements Dialect {
     }
 
     @Override
-    public String asString() {
+    public String content() {
         return this.origin;
     }
+
+
 }

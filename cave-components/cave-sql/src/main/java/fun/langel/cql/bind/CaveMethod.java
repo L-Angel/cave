@@ -39,7 +39,6 @@ public class CaveMethod {
         checkArguments(args);
 
         Target target = target(args);
-        Datasource ds = null;
         Invoker invoker = Invoker.EMPTY;
         ParameterResolver resolver = new ParameterResolver();
         Pair<String, List<Parameter>> pair = resolver.resolve(this.signature.sql());

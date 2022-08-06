@@ -136,11 +136,8 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
     public From visitFromClause(CqlParser.FromClauseContext ctx) {
         CqlParser.ExpressionContext wExpr = ctx.whereExpr;
         CqlParser.TableSourcesContext sources = ctx.tableSources();
-        Expr where = null;
-        if (wExpr instanceof CqlParser.LogicalExpressionContext) {
-            CqlParser.LogicalExpressionContext logicWExpr = (CqlParser.LogicalExpressionContext) wExpr;
-            where = visitExpr(logicWExpr);
-        }
+        Expr where = visitExpr(wExpr);
+
         List<Table> tables = new LinkedList<>();
         for (int idx = 0, len = sources.getChildCount(); idx < len; idx++) {
             ParseTree pt = sources.getChild(idx);
