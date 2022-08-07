@@ -35,7 +35,13 @@ public class Rows implements ReturnValue<List<Row>> {
     }
 
     public long size() {
-        return this.size;
+        if (this.size != 0) {
+            return this.size;
+        }
+        if (this.rows == null || this.rows.isEmpty()) {
+            return 0;
+        }
+        return this.rows.size();
     }
 
     @Override

@@ -24,6 +24,7 @@
         <javacc-plugin.version>2.6</javacc-plugin.version>
         <elasticsearch.version>7.7.0</elasticsearch.version>
         <spring.version>4.3.9.RELEASE</spring.version>
+
     </properties>
 
     <dependencies>

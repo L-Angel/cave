@@ -7,6 +7,7 @@ import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.parameter.Parameter;
 import fun.langel.cql.parameter.ParameterResolver;
 import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
+import fun.langel.cql.statement.DeleteStatement;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.statement.Statement;
 import fun.langel.cql.statement.Statements;
@@ -38,10 +39,29 @@ public class Cql {
     }
 
     public static Statements parse(final String sql) {
-        Pair<String, List<Parameter>> pair = parameterResolver.resolve(sql);
-        CqlLexer lexer = new CqlLexer(CharStreams.fromString(pair.left().toUpperCase()));
+        CqlLexer lexer = new CqlLexer(CharStreams.fromString(sql.toUpperCase()));
         CqlParser parser = new CqlParser(new CommonTokenStream(lexer));
         DefaultCqlParserVisitor visitor = new DefaultCqlParserVisitor();
         return visitor.visit(parser.root());
+    }
+
+    public static SelectStatement parseSelectStatement(final String sql) {
+        Statements statements = parse(sql);
+        for (Statement statement : statements) {
+            if (statement instanceof SelectStatement) {
+                return (SelectStatement) statement;
+            }
+        }
+        return null;
+    }
+
+    public static DeleteStatement parseDeleteStatement(final String sql) {
+        Statements statements = parse(sql);
+        for (Statement statement : statements) {
+            if (statement instanceof DeleteStatement) {
+                return (DeleteStatement) statement;
+            }
+        }
+        return null;
     }
 }

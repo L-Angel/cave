@@ -1,6 +1,10 @@
 package fun.langel.cql.resolve.rv;
 
 import fun.langel.cql.resolve.RvResolver;
+import fun.langel.cql.rv.Number;
+import fun.langel.cql.rv.ReturnValue;
+import fun.langel.cql.rv.Row;
+import fun.langel.cql.rv.Rows;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.search.SearchHit;
@@ -15,12 +19,12 @@ import java.util.Map;
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/8/4 19:28
  **/
-public class ElasticSearchRvResolver<D> implements RvResolver<SearchResponse, D> {
+public class ElasticSearchRvResolver implements RvResolver<SearchResponse> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ElasticSearchRvResolver.class);
 
     @Override
-    public D resolve(SearchResponse from, Class<D> klass) {
+    public ReturnValue<?> resolve(SearchResponse from) {
         if (from == null) {
             return null;
         }
@@ -35,26 +39,43 @@ public class ElasticSearchRvResolver<D> implements RvResolver<SearchResponse, D>
         if (hitArray == null || hitArray.length == 0) {
             return null;
         }
+        Rows rows = new Rows();
         for (SearchHit hit : hitArray) {
             Map<String, DocumentField> fieldMap = hit.getFields();
-            return resolve(fieldMap, klass);
+            rows.add(resolve(fieldMap));
         }
-        return null;
+        return rows;
     }
 
-    private D resolve(Map<String, DocumentField> r, Class<D> klass) {
-        try {
-            Object rv = klass.newInstance();
-            Field[] fields = klass.getDeclaredFields();
-            for (Field f : fields) {
-                DocumentField df = r.get(f.getName());
-                f.setAccessible(true);
-                f.set(rv, df.getValue() == null ? null : df.getValue());
-            }
-            return (D) rv;
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+    private Row resolve(Map<String, DocumentField> r) {
+        Row row = new Row();
+        for (Map.Entry<String, DocumentField> entry : r.entrySet()) {
+            final String key = entry.getKey();
+            DocumentField value = entry.getValue();
+            row.put(key, resolveObj(value));
+        }
+        return row;
+    }
+
+    private ReturnValue<?> resolveObj(Object v) {
+        if (v == null) {
             return null;
         }
+        if (v instanceof String) {
+            return fun.langel.cql.rv.String.of((String) v);
+        }
+        if (int.class.isAssignableFrom(v.getClass()) || (v instanceof Integer)) {
+            return Number.of((Integer) v);
+        }
+        if (long.class.isAssignableFrom(v.getClass()) || (v instanceof Long)) {
+            return Number.of((Long) v);
+        }
+        if (float.class.isAssignableFrom(v.getClass()) || (v instanceof Float)) {
+            return Number.of((Float) v);
+        }
+        if (double.class.isAssignableFrom(v.getClass()) || (v instanceof Double)) {
+            return Number.of((Double) v);
+        }
+        return fun.langel.cql.rv.String.of(String.valueOf(v));
     }
 }
