@@ -1,8 +1,5 @@
-package fun.langel.cql.calcite;
+package fun.langel.cql;
 
-import com.alibaba.fastjson.JSON;
-import fun.langel.cql.Cql;
-import fun.langel.cql.Language;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,12 +25,7 @@ public class CqlTest {
         Cql.parse(sql, Language.ELASTIC_SEARCH);
     }
 
-    @Test
-    public void test() {
-        String v = "adsasd\n1231231";
 
-        System.out.println(JSON.toJSONString(JSON.toJSONString(new Model1(v))));
-    }
 
     public static class Model1 {
         private String v;

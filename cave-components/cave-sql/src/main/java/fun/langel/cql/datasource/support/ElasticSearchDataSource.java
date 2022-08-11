@@ -2,6 +2,7 @@ package fun.langel.cql.datasource.support;
 
 
 import fun.langel.cql.Cql;
+import fun.langel.cql.Language;
 import fun.langel.cql.constant.Const;
 import fun.langel.cql.datasource.Connection;
 import fun.langel.cql.datasource.DataSource;
@@ -17,9 +18,7 @@ import fun.langel.cql.statement.SelectStatement;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +87,13 @@ class ElasticSearchConnection implements Connection {
     }
 
     private void prepareConnect() {
-        this.restClient = new RestHighLevelClient(RestClient.builder(hosts));
+        // Create the low-level client
+        RestClient httpClient = RestClient.builder(this.hosts).build();
+
+// Create the HLRC
+        this.restClient = new RestHighLevelClientBuilder(httpClient)
+                .setApiCompatibilityMode(true)
+                .build();
     }
 
     @Override
@@ -114,6 +119,11 @@ class ElasticSearchSession implements Session {
         this.restClient = restClient;
         this.dialectResolver = new ElasticSearchQDLDialectResolver();
         this.rvResolver = new ElasticSearchRvResolver();
+    }
+
+    @Override
+    public Language lang() {
+        return Language.ELASTIC_SEARCH;
     }
 
     @Override

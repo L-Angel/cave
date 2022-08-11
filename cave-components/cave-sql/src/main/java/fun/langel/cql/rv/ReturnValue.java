@@ -1,5 +1,7 @@
 package fun.langel.cql.rv;
 
+import fun.langel.cql.exception.MappingException;
+
 import java.io.Serializable;
 
 /**
@@ -9,4 +11,6 @@ import java.io.Serializable;
 public interface ReturnValue<T> extends Serializable {
 
     T getValue();
+
+    Object mapTo(Class<?> klass) throws MappingException;
 }

@@ -13,6 +13,7 @@ public class SelectStatementImpl implements SelectStatement {
 
 
     private List<Column> columns;
+
     private From from;
 
     private OrderBy orderBy;

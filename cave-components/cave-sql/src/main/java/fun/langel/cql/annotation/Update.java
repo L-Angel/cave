@@ -11,4 +11,13 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 public @interface Update {
     String sql();
+
+    /**
+     * 指定数据源名称
+     *
+     * @return
+     */
+    String direct() default "";
+
+    Class<?> returnType() default Object.class;
 }

@@ -12,6 +12,13 @@ import java.lang.annotation.*;
 public @interface Insert {
     
     String sql();
+    /**
+     * 指定数据源名称
+     *
+     * @return
+     */
+    String direct() default "";
 
+    Class<?> returnType() default Object.class;
 
 }

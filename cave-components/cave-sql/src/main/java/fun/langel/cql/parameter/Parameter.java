@@ -8,7 +8,7 @@ public class Parameter {
 
     private final String name;
 
-    private final Object value;
+    private Object value;
 
     private final int pos;
 
@@ -27,6 +27,10 @@ public class Parameter {
 
     public int pos() {
         return this.pos;
+    }
+
+    public void setValue(final Object value) {
+        this.value = value;
     }
 
     public String getName() {

@@ -1,5 +1,7 @@
 package fun.langel.cql.bind;
 
+import fun.langel.cql.spring.Configuration;
+
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -17,8 +19,12 @@ public class CaveProxy implements InvocationHandler, Serializable {
     private final Class<?> klass;
     private final Map<Method, CaveMethod> cache;
 
-    public CaveProxy(final Class<?> interfaceKlass,
+    private final Configuration configuration;
+
+    public CaveProxy(final Configuration configuration,
+                     final Class<?> interfaceKlass,
                      final Map<Method, CaveMethod> cache) {
+        this.configuration = configuration;
         this.klass = interfaceKlass;
         this.cache = cache;
     }
@@ -34,7 +40,7 @@ public class CaveProxy implements InvocationHandler, Serializable {
     }
 
     public CaveMethod cachedMethod(final Method method) {
-        return cache.computeIfAbsent(method, (m) -> new CaveMethod(this.klass, m));
+        return cache.computeIfAbsent(method, (m) -> new CaveMethod(this.configuration, this.klass, m));
     }
 
     public Object invokeDefaultMethod(Object proxy, Method method, Object... args) throws Throwable {

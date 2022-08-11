@@ -16,4 +16,7 @@ import java.lang.annotation.*;
 public @interface CaveScan {
 
     String[] packages();
+
+    DataSource[] datasource() default {};
+
 }

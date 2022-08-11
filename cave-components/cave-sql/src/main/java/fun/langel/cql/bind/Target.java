@@ -1,4 +1,6 @@
-package fun.langel.cql.parameter;
+package fun.langel.cql.bind;
+
+import fun.langel.cql.bind.Arg;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -6,5 +8,5 @@ package fun.langel.cql.parameter;
  **/
 public interface Target {
 
-    String name();
+    Arg[] args();
 }

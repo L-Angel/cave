@@ -41,17 +41,17 @@ public class ElasticSearchRvResolver implements RvResolver<SearchResponse> {
         }
         Rows rows = new Rows();
         for (SearchHit hit : hitArray) {
-            Map<String, DocumentField> fieldMap = hit.getFields();
+            Map<String, Object> fieldMap = hit.getSourceAsMap();
             rows.add(resolve(fieldMap));
         }
         return rows;
     }
 
-    private Row resolve(Map<String, DocumentField> r) {
+    private Row resolve(Map<String, Object> r) {
         Row row = new Row();
-        for (Map.Entry<String, DocumentField> entry : r.entrySet()) {
+        for (Map.Entry<String, Object> entry : r.entrySet()) {
             final String key = entry.getKey();
-            DocumentField value = entry.getValue();
+            Object value = entry.getValue();
             row.put(key, resolveObj(value));
         }
         return row;

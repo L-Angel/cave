@@ -17,5 +17,12 @@ public @interface Select {
 
     Mode mode() default Mode.DIRECT;
 
-    Datasource[] datasource() default {};
+    /**
+     * 指定数据源名称
+     *
+     * @return
+     */
+    String direct() default "";
+
+    Class<?> returnType() default Object.class;
 }

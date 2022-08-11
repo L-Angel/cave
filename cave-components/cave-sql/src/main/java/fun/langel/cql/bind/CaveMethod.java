@@ -1,7 +1,8 @@
 package fun.langel.cql.bind;
 
 import fun.langel.cql.annotation.*;
-import fun.langel.cql.datasource.Datasource;
+import fun.langel.cql.datasource.DataSource;
+import fun.langel.cql.datasource.DataSourceHolder;
 import fun.langel.cql.invoke.Invocation;
 import fun.langel.cql.invoke.Invoker;
 import fun.langel.cql.invoke.Result;
@@ -9,12 +10,12 @@ import fun.langel.cql.invoke.support.DeleteInvoker;
 import fun.langel.cql.invoke.support.InsertInvoker;
 import fun.langel.cql.invoke.support.SelectInvoker;
 import fun.langel.cql.invoke.support.UpdateInvoker;
-import fun.langel.cql.parameter.Parameter;
 import fun.langel.cql.parameter.ParameterResolver;
-import fun.langel.cql.parameter.Target;
+import fun.langel.cql.spring.Configuration;
 import fun.langel.cql.util.Pair;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.List;
 
 /**
@@ -29,24 +30,30 @@ public class CaveMethod {
 
     private Invocation invocation;
 
-    public CaveMethod(final Class<?> klass, final Method method) {
+    private final Configuration configuration;
+
+    public CaveMethod(final Configuration configuration,
+                      final Class<?> klass, final Method method) {
+        this.configuration = configuration;
         this.klass = klass;
         this.signature = new MethodSignature(method);
         this.invocation = new Invocation(this.signature);
     }
 
-    public Object execute(Object... args) {
-        checkArguments(args);
+    public Object execute(Object... values) {
+        checkArguments(values);
 
+        Arg[] args = args(this.signature.method.getParameters(), values);
         Target target = target(args);
         Invoker invoker = Invoker.EMPTY;
         ParameterResolver resolver = new ParameterResolver();
-        Pair<String, List<Parameter>> pair = resolver.resolve(this.signature.sql());
+        Pair<String, List<fun.langel.cql.parameter.Parameter>> pair = resolver.resolve(this.signature.sql(), args);
 
+        DataSourceHolder holder = resolveDataSource(this.signature.direct());
         if (this.signature.isSelect()) {
-            invoker = new SelectInvoker(target, this.signature.sql());
+            invoker = new SelectInvoker(target, holder.getDataSource(), this.signature.sql(), pair);
         } else if (this.signature.isDelete()) {
-            invoker = new DeleteInvoker();
+            invoker = new DeleteInvoker(target, holder.getDataSource(), this.signature.sql(), pair);
         } else if (this.signature.isInsert()) {
             invoker = new InsertInvoker();
         } else if (this.signature.isUpdate()) {
@@ -56,25 +63,34 @@ public class CaveMethod {
         return result.getValue();
     }
 
+
     private void checkArguments(Object... args) {
         if (args.length < 0) {
             throw new IllegalArgumentException("Illegal argument size.");
         }
     }
 
-    private Target target(Object... args) {
-        for (int idx = 0, len = args.length; idx < len; idx++) {
-            Object arg = args[idx];
-            if (arg.getClass().isAnnotationPresent(Meta.class)) {
-                return (Target) arg;
+    private Target target(final Arg[] args) {
+        return () -> args;
+    }
+
+    private Arg[] args(final Parameter[] parameters, Object... values) {
+        final Arg[] args = new Arg[parameters.length];
+        for (int idx = 0, len = values.length; idx < len; idx++) {
+            Parameter parameter = parameters[idx];
+            Param param = parameter.getDeclaredAnnotation(Param.class);
+            String alias = null;
+            if (param != null) {
+                alias = param.name();
             }
+            args[idx] = new Arg(parameter.getName(), alias, values[idx]);
         }
-        return new Target() {
-            @Override
-            public String name() {
-                return null;
-            }
-        };
+        return args;
+    }
+
+
+    private DataSourceHolder resolveDataSource(final String direct) {
+        return this.configuration.getDataSource(direct);
     }
 
     public static class MethodSignature {
@@ -91,6 +107,10 @@ public class CaveMethod {
 
         private String sql;
 
+        private Class<?> returnType;
+
+        private String direct;
+
         public MethodSignature(final Method method) {
             this.method = method;
             this.selectAnno = this.method.getDeclaredAnnotation(Select.class);
@@ -104,16 +124,33 @@ public class CaveMethod {
             return this.sql;
         }
 
+        public Method method() {
+            return this.method;
+        }
+
         public void parse() {
             if (selectAnno != null) {
                 this.sql = this.selectAnno.sql();
+                this.returnType = this.selectAnno.returnType();
+                this.direct = this.selectAnno.direct();
             } else if (deleteAnno != null) {
                 this.sql = this.deleteAnno.sql();
+                this.returnType = this.deleteAnno.returnType();
+                this.direct = this.deleteAnno.direct();
             } else if (insertAnno != null) {
                 this.sql = this.insertAnno.sql();
+                this.returnType = this.insertAnno.returnType();
+                this.direct = this.insertAnno.direct();
             } else if (updateAnno != null) {
                 this.sql = this.updateAnno.sql();
+                this.returnType = this.updateAnno.returnType();
+                this.direct = this.updateAnno.direct();
+
             }
+        }
+
+        public String direct() {
+            return this.direct;
         }
 
         public boolean isSelect() {
@@ -131,5 +168,18 @@ public class CaveMethod {
         public boolean isInsert() {
             return this.insertAnno != null;
         }
+
+        public Class<?> actualType() {
+            if (List.class.isAssignableFrom(returnType())) {
+                return this.returnType;
+            }
+            return returnType();
+        }
+
+        public Class<?> returnType() {
+            return this.method.getReturnType();
+        }
     }
+
+
 }

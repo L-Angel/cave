@@ -15,7 +15,10 @@ import fun.langel.cql.util.Pair;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -27,7 +30,6 @@ public class Cql {
 
     public static <D> Dialect<D> parse(final String sql, Language target) {
         Statements statements = parse(sql);
-
         for (Statement stat : statements) {
             if (stat instanceof SelectStatement) {
                 if (target == Language.ELASTIC_SEARCH) {
@@ -39,7 +41,7 @@ public class Cql {
     }
 
     public static Statements parse(final String sql) {
-        CqlLexer lexer = new CqlLexer(CharStreams.fromString(sql.toUpperCase()));
+        CqlLexer lexer = new CqlLexer(CharStreams.fromString(sql));
         CqlParser parser = new CqlParser(new CommonTokenStream(lexer));
         DefaultCqlParserVisitor visitor = new DefaultCqlParserVisitor();
         return visitor.visit(parser.root());
@@ -64,4 +66,5 @@ public class Cql {
         }
         return null;
     }
+
 }

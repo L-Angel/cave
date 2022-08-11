@@ -1,5 +1,7 @@
 package fun.langel.cql.rv;
 
+import fun.langel.cql.exception.MappingException;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -21,6 +23,11 @@ public class Time implements ReturnValue<LocalDateTime> {
 
     @Override
     public LocalDateTime getValue() {
+        return this.value;
+    }
+
+    @Override
+    public Object mapTo(Class<?> klass) throws MappingException {
         return this.value;
     }
 }

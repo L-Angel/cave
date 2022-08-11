@@ -16,5 +16,11 @@ public @interface Delete {
 
     Mode mode() default Mode.DIRECT;
 
-    Class<?> direct() default Object.class;
-}
+    /**
+     * 指定数据源名称
+     *
+     * @return
+     */
+    String direct() default "";
+
+    Class<?> returnType() default Object.class;}

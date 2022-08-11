@@ -1,5 +1,8 @@
 package fun.langel.cql.rv;
 
+import fun.langel.cql.exception.MappingException;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,5 +50,17 @@ public class Rows implements ReturnValue<List<Row>> {
     @Override
     public List<Row> getValue() {
         return this.rows;
+    }
+
+    @Override
+    public Object mapTo(Class<?> klass) throws MappingException {
+        if (this.rows == null) {
+            return null;
+        }
+        final List<Object> v = new LinkedList<>();
+        for (Row row : this.rows) {
+            v.add(row.mapTo(klass));
+        }
+        return v;
     }
 }

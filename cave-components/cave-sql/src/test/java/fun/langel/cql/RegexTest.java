@@ -1,4 +1,4 @@
-package fun.langel.cql.calcite;
+package fun.langel.cql;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

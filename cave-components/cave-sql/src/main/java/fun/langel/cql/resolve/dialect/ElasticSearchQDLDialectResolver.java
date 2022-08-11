@@ -40,7 +40,7 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         qb.must().addAll(resolveQueryCondition(statement.where()));
         ssb.query(qb);
 
-        List<String> tables = ListUtil.isNullOrEmpty(statement.tables()) ? null : statement.tables().stream().map(Table::getName).collect(Collectors.toList());
+        List<String> tables = ListUtil.isNullOrEmpty(statement.tables()) ? null : statement.tables().stream().map(Table::getName).map(String::toLowerCase).collect(Collectors.toList());
         SearchRequest sr = new SearchRequest(ListUtil.toStringArray(tables));
         sr.searchType(SearchType.DEFAULT);
         sr.source(ssb);

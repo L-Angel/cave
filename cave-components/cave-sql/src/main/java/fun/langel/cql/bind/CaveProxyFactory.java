@@ -1,5 +1,7 @@
 package fun.langel.cql.bind;
 
+import fun.langel.cql.spring.Configuration;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
@@ -13,13 +15,16 @@ public class CaveProxyFactory<T> {
 
     private Class<?> klass;
 
+    private Configuration configuration;
     private final Map<Method, CaveMethod> methodCache = new HashMap<>();
 
-    public CaveProxyFactory(final Class<?> klass) {
+    public CaveProxyFactory(final Configuration configuration,
+                            final Class<?> klass) {
+        this.configuration = configuration;
         this.klass = klass;
     }
 
     public T newInstance() {
-        return (T) Proxy.newProxyInstance(this.klass.getClassLoader(), new Class[]{klass}, new CaveProxy(this.klass, methodCache));
+        return (T) Proxy.newProxyInstance(this.klass.getClassLoader(), new Class[]{klass}, new CaveProxy(this.configuration, this.klass, methodCache));
     }
 }

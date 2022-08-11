@@ -7,4 +7,5 @@ package fun.langel.cql.constant;
 public interface Const {
 
     String CAVE_ELASTICSEARCH_HOST = "cave.elasticsearch.hosts";
+
 }

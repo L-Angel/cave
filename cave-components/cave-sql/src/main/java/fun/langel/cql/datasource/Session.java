@@ -1,5 +1,6 @@
 package fun.langel.cql.datasource;
 
+import fun.langel.cql.Language;
 import fun.langel.cql.rv.ReturnValue;
 
 /**
@@ -7,6 +8,7 @@ import fun.langel.cql.rv.ReturnValue;
  * @since 2022/8/7 06:01
  **/
 public interface Session {
+    Language lang();
 
     ReturnValue<?> executeQuery(String sql);
 

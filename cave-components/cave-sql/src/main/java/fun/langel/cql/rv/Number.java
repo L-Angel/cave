@@ -1,5 +1,7 @@
 package fun.langel.cql.rv;
 
+import fun.langel.cql.exception.MappingException;
+
 import java.math.BigDecimal;
 
 /**
@@ -14,7 +16,7 @@ public class Number implements ReturnValue<Number> {
         this.value = value;
     }
 
-    public static Number of(final String value) {
+    public static Number of(final java.lang.String value) {
         return new Number(new BigDecimal(value));
     }
 
@@ -58,5 +60,21 @@ public class Number implements ReturnValue<Number> {
             return 0;
         }
         return this.value.doubleValue();
+    }
+
+    @Override
+    public Object mapTo(Class<?> klass) throws MappingException {
+        if (String.class.isAssignableFrom(klass)) {
+            return this.value.toString();
+        } else if (Integer.class.isAssignableFrom(klass)) {
+            return this.value.intValue();
+        } else if (Long.class.isAssignableFrom(klass)) {
+            return this.value.longValue();
+        } else if (Float.class.isAssignableFrom(klass)) {
+            return this.value.floatValue();
+        } else if (Double.class.isAssignableFrom(klass)) {
+            return this.value.doubleValue();
+        }
+        return null;
     }
 }

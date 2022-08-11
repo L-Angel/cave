@@ -1,4 +1,4 @@
-package fun.langel.cql.calcite;
+package fun.langel.cql;
 
 import fun.langel.cql.parameter.Parameter;
 import fun.langel.cql.parameter.ParameterResolver;
@@ -21,10 +21,10 @@ public class ParameterResolverTest {
     public void resolve() {
         final String sql = "select * from table1 where field1 = ${value1} and field2 = ${value2} " +
                 " and gmt_created > ${value3}";
-        ParameterResolver resolver = new ParameterResolver();
-        Pair<String, List<Parameter>> pair = resolver.resolve(sql);
-
-        System.out.println(pair.left());
-        System.out.println(pair.right());
+        // ParameterResolver resolver = new ParameterResolver();
+        // Pair<String, List<Parameter>> pair = resolver.resolve(sql);
+        //
+        // System.out.println(pair.left());
+        // System.out.println(pair.right());
     }
 }

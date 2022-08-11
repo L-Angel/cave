@@ -18,7 +18,14 @@ public class Pair<L, R> {
     }
 
     public static <LL, RR> Pair<LL, RR> of(final LL left, final RR right) {
+        if (left == null && right == null) {
+            return empty();
+        }
         return new Pair<LL, RR>(left, right);
+    }
+
+    public static EmptyPair empty() {
+        return new EmptyPair();
     }
 
     public L left() {

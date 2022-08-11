@@ -1,5 +1,7 @@
 package fun.langel.cql.rv;
 
+import fun.langel.cql.exception.MappingException;
+
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/8/7 20:37
@@ -18,6 +20,11 @@ public class String implements ReturnValue<java.lang.String> {
 
     @Override
     public java.lang.String getValue() {
+        return this.value;
+    }
+
+    @Override
+    public Object mapTo(Class<?> klass) throws MappingException {
         return this.value;
     }
 }
