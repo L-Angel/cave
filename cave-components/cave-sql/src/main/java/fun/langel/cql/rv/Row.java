@@ -53,7 +53,7 @@ public class Row implements ReturnValue<Map<java.lang.String, ReturnValue<?>>> {
                 continue;
             }
             try {
-                f.setValue(o, v.getValue());
+                f.setValue(o, v.mapTo(f.getKlass()));
             } catch (IllegalAccessException e) {
                 throw new MappingException(e.getMessage(), e);
             }

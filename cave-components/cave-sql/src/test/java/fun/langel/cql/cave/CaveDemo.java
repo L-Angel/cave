@@ -17,7 +17,7 @@ public interface CaveDemo {
     String query(@Param(name = "param1") String param1);
 
 
-    @Select(sql = "select field1,field2 from demo_index where field1 = 'value1'",
+    @Select(sql = "select field1,field2 from demo_index where field1 = #{param1}",
             direct = "defaultEs"
             , returnType = Model.class)
     List<Model> queryList(@Param(name = "param1") String param1);

@@ -30,4 +30,8 @@ public class Field {
         return actual().getName();
     }
 
+    public Class<?> getKlass() {
+        return actual().getType();
+    }
+
 }

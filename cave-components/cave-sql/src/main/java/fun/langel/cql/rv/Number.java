@@ -1,8 +1,13 @@
 package fun.langel.cql.rv;
 
 import fun.langel.cql.exception.MappingException;
+import fun.langel.cql.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -66,15 +71,19 @@ public class Number implements ReturnValue<Number> {
     public Object mapTo(Class<?> klass) throws MappingException {
         if (String.class.isAssignableFrom(klass)) {
             return this.value.toString();
-        } else if (Integer.class.isAssignableFrom(klass)) {
+        } else if (int.class.isAssignableFrom(klass) || Integer.class.isAssignableFrom(klass)) {
             return this.value.intValue();
-        } else if (Long.class.isAssignableFrom(klass)) {
+        } else if (long.class.isAssignableFrom(klass) || Long.class.isAssignableFrom(klass)) {
             return this.value.longValue();
-        } else if (Float.class.isAssignableFrom(klass)) {
+        } else if (float.class.isAssignableFrom(klass) || Float.class.isAssignableFrom(klass)) {
             return this.value.floatValue();
-        } else if (Double.class.isAssignableFrom(klass)) {
+        } else if (double.class.isAssignableFrom(klass) || Double.class.isAssignableFrom(klass)) {
             return this.value.doubleValue();
+        } else if (LocalDateTime.class.isAssignableFrom(klass)) {
+            return TimeUtil.toLocalDateTime(this.value.longValue());
+        } else if (Date.class.isAssignableFrom(klass)) {
+            return TimeUtil.toDate(this.value.longValue());
         }
-        return null;
+        return this.value.toString();
     }
 }

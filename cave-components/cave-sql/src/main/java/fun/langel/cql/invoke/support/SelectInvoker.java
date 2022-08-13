@@ -2,6 +2,7 @@ package fun.langel.cql.invoke.support;
 
 import fun.langel.cql.Language;
 import fun.langel.cql.datasource.DataSource;
+import fun.langel.cql.datasource.PreparedSession;
 import fun.langel.cql.datasource.Session;
 import fun.langel.cql.exception.DataSourceException;
 import fun.langel.cql.invoke.AbstractInvoker;
@@ -35,6 +36,9 @@ public class SelectInvoker extends AbstractInvoker {
             throw new DataSourceException("Dont find any matched datasource.");
         }
         Language lang = session.lang();
+        if (session instanceof PreparedSession) {
+            ((PreparedSession) session).setParameters(parameterized().right());
+        }
         ReturnValue<?> rv = null;
         if (lang == Language.ELASTIC_SEARCH) {
             rv = session.executeQuery(this.sql());

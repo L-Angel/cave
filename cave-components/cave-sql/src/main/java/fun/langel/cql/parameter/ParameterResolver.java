@@ -52,16 +52,16 @@ public class ParameterResolver {
             return pair;
         }
         for (Parameter p : pair.right()) {
-           p.setValue(matchValue(args));
+            p.setValue(matchValue(p.getName(), args));
         }
         return pair;
     }
 
-    private Object matchValue(Arg[] args) {
+    private Object matchValue(String name, Arg[] args) {
         for (int idx = 0, len = args.length; idx < len; idx++) {
             Arg arg = args[idx];
-            final String name = StringUtil.isEmpty(arg.alias()) ? arg.name() : arg.alias();
-            if (name.equalsIgnoreCase(arg.name())) {
+            final String n = !StringUtil.isEmpty(arg.alias()) ? arg.alias() : arg.name();
+            if (n.equalsIgnoreCase(name)) {
                 return arg.value();
             }
         }

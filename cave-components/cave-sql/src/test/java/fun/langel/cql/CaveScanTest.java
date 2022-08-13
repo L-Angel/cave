@@ -35,7 +35,7 @@ public class CaveScanTest {
 
     @Test
     public void test_queryEs_list() {
-        List<Model> r = caveDemo.queryList("param_abc1");
+        List<Model> r = caveDemo.queryList("value1");
 
         System.out.println(r);
     }

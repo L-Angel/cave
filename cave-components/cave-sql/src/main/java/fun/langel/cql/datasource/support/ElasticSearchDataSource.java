@@ -4,10 +4,7 @@ package fun.langel.cql.datasource.support;
 import fun.langel.cql.Cql;
 import fun.langel.cql.Language;
 import fun.langel.cql.constant.Const;
-import fun.langel.cql.datasource.Connection;
-import fun.langel.cql.datasource.DataSource;
-import fun.langel.cql.datasource.DataSourceType;
-import fun.langel.cql.datasource.Session;
+import fun.langel.cql.datasource.*;
 import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.resolve.DialectResolver;
 import fun.langel.cql.resolve.RvResolver;
@@ -102,7 +99,7 @@ class ElasticSearchConnection implements Connection {
     }
 }
 
-class ElasticSearchSession implements Session {
+class ElasticSearchSession extends PreparedSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(ElasticSearchSession.class);
 
@@ -127,7 +124,7 @@ class ElasticSearchSession implements Session {
     }
 
     @Override
-    public ReturnValue<?> executeQuery(String sql) {
+    public ReturnValue<?> executeQuery0(String sql) {
         SelectStatement select = Cql.parseSelectStatement(sql);
         Dialect<SearchRequest> dialect = this.dialectResolver.resolve(select);
         try {
@@ -140,12 +137,12 @@ class ElasticSearchSession implements Session {
     }
 
     @Override
-    public Number executeUpdate(String sql) {
+    public Number executeUpdate0(String sql) {
         return null;
     }
 
     @Override
-    public Number executeDelete(String sql) {
+    public Number executeDelete0(String sql) {
         return null;
     }
 }

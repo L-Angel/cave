@@ -1,6 +1,13 @@
 package fun.langel.cql.rv;
 
 import fun.langel.cql.exception.MappingException;
+import fun.langel.cql.util.TimeUtil;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -25,6 +32,15 @@ public class String implements ReturnValue<java.lang.String> {
 
     @Override
     public Object mapTo(Class<?> klass) throws MappingException {
+        if (LocalDateTime.class.isAssignableFrom(klass)) {
+            return TimeUtil.toLocalDateTime(this.value);
+        } else if (Date.class.isAssignableFrom(klass)) {
+            try {
+                return TimeUtil.toDate(this.value);
+            } catch (ParseException e) {
+                throw new MappingException(e);
+            }
+        }
         return this.value;
     }
 }
