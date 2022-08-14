@@ -40,7 +40,6 @@ public class Row implements ReturnValue<Map<java.lang.String, ReturnValue<?>>> {
     public Object mapTo(Class<?> klass) throws MappingException {
 
         Klass cKls = Klass.of(klass);
-
         Object o = null;
         try {
             o = cKls.newInstance();
