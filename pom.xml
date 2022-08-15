@@ -7,11 +7,40 @@
     <groupId>fun.l-angel</groupId>
     <artifactId>cave</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <modules>
         <module>cave-components</module>
     </modules>
 
+    <name>Cave</name>
+
+
+    <developers>
+        <developer>
+            <email>lonelyangel.jcw@gmail.com</email>
+            <name>Rick Jiang</name>
+            <url>https://github.com/L-Angel;http://l-angel.fun/</url>
+        </developer>
+    </developers>
+    <description>Cave</description>
+    <url>https://github.com/L-Angel/cave</url>
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://github.com/L-Angel/cave/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+            <comments>A permissive license whose main conditions require preservation of copyright and license notices.
+                Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works
+                may be distributed under different terms and without source code.
+            </comments>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/L-Angel/cave.git</url>
+        <connection>scm:git:https://github.com/L-Angel/cave.git</connection>
+        <developerConnection>scm:git:https://github.com/L-Angel/cave.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <properties>
         <java.source.version>1.8</java.source.version>
         <java.target.version>1.8</java.target.version>
@@ -157,22 +186,22 @@
             <!--            </plugin>-->
 
             <!-- verify gpg, generate asc files. -->
-            <!--            <plugin>-->
-            <!--                <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                <artifactId>maven-gpg-plugin</artifactId>-->
-            <!--                <version>1.5</version>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        &lt;!&ndash; verify gpg, generate asc files. &ndash;&gt;-->
-            <!--                        <id>gpg</id>-->
-            <!--                        <phase>verify</phase>-->
-            <!--                        <goals>-->
-            <!--                            <goal>sign</goal>-->
-            <!--                        </goals>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <!-- verify gpg, generate asc files. -->
+                        <id>gpg</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
 
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
