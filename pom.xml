@@ -13,6 +13,8 @@
     </modules>
 
     <properties>
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
 
@@ -25,6 +27,7 @@
         <elasticsearch.version>7.17.0</elasticsearch.version>
         <spring.version>5.1.8.RELEASE</spring.version>
         <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
+        <slf4j.version>1.7.9</slf4j.version>
 
     </properties>
 
@@ -32,11 +35,21 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
     </dependencies>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -61,11 +74,11 @@
                 <artifactId>elasticsearch-rest-high-level-client</artifactId>
                 <version>${elasticsearch.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>org.elasticsearch.client</groupId>-->
-<!--                <artifactId>elasticsearch-rest-client</artifactId>-->
-<!--                <version>${elasticsearch.version}</version>-->
-<!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.elasticsearch.client</groupId>-->
+            <!--                <artifactId>elasticsearch-rest-client</artifactId>-->
+            <!--                <version>${elasticsearch.version}</version>-->
+            <!--            </dependency>-->
             <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
@@ -95,51 +108,158 @@
         </dependencies>
     </dependencyManagement>
     <build>
+        <resources>
+            <resource>
+                <targetPath>resources</targetPath>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <targetPath>resources</targetPath>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+
         <plugins>
+            <!--            <plugin>-->
+            <!--                <groupId>org.antlr</groupId>-->
+            <!--                <artifactId>antlr4-maven-plugin</artifactId>-->
+            <!--                <version>${antlr.version}</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>antlr</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>antlr4</goal>-->
+            <!--                        </goals>-->
+            <!--                        <phase>compile</phase>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+
+            <!--                <configuration>-->
+            <!--                    &lt;!&ndash;指定导入语法和标记文件的位置。&ndash;&gt;-->
+            <!--                    <libDirectory>src/main/antlr4/imports</libDirectory>-->
+            <!--                    &lt;!&ndash;ANTLR语法文件(*.g4)所在的目录。&ndash;&gt;-->
+            <!--                    <sourceDirectory>src/main/antlr4</sourceDirectory>-->
+            <!--                    &lt;!&ndash;指定生成Java文件的输出目录。&ndash;&gt;-->
+            <!--                    <outputDirectory>src/main/java</outputDirectory>-->
+            <!--                    &lt;!&ndash;生成解析树侦听器接口和基类。&ndash;&gt;-->
+            <!--                    <listener>true</listener>-->
+            <!--                    &lt;!&ndash;生成解析树访问者接口和基类。&ndash;&gt;-->
+            <!--                    <visitor>true</visitor>-->
+            <!--                    <treatWarningsAsErrors>true</treatWarningsAsErrors>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
+
+            <!-- verify gpg, generate asc files. -->
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-gpg-plugin</artifactId>-->
+            <!--                <version>1.5</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        &lt;!&ndash; verify gpg, generate asc files. &ndash;&gt;-->
+            <!--                        <id>gpg</id>-->
+            <!--                        <phase>verify</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>sign</goal>-->
+            <!--                        </goals>-->
+
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
             <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${antlr.version}</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
                 <executions>
                     <execution>
-                        <id>antlr</id>
+                        <id>attach-sources</id>
                         <goals>
-                            <goal>antlr4</goal>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
                         </goals>
                         <phase>compile</phase>
                     </execution>
                 </executions>
-
                 <configuration>
-                    <!--指定导入语法和标记文件的位置。-->
-                    <libDirectory>src/main/antlr4/imports</libDirectory>
-                    <!--ANTLR语法文件(*.g4)所在的目录。-->
-                    <sourceDirectory>src/main/antlr4</sourceDirectory>
-                    <!--指定生成Java文件的输出目录。-->
-                    <outputDirectory>src/main/java</outputDirectory>
-                    <!--生成解析树侦听器接口和基类。-->
-                    <listener>true</listener>
-                    <!--生成解析树访问者接口和基类。-->
-                    <visitor>true</visitor>
-                    <treatWarningsAsErrors>true</treatWarningsAsErrors>
+                    <aggregate>true</aggregate>
+                    <tags>
+                        <tag>
+                            <name>date</name>
+                        </tag>
+                    </tags>
+                </configuration>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>2.3.2</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <!--                    <includes>-->
-                    <!--                        <include>**/**.ftl</include>-->
-                    <!--                        <include>**/**.jj</include>-->
-                    <!--                        <include>**.fmpp</include>-->
-                    <!--                    </includes>-->
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
+                    <encoding>${file.encoding}</encoding>
+                    <compilerArgument>-Xlint:all</compilerArgument>
+                    <showDeprecation>true</showDeprecation>
+                    <showWarnings>true</showWarnings>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
+    <repositories>
+        <repository>
+            <id>sonatype-repo</id>
+            <name>Sonatype Repository</name>
+            <url>http://www.sonatype.org/nexus/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <!--Jar Release Repository Address-->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
 </project>

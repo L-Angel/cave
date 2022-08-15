@@ -15,7 +15,7 @@ public @interface Insert {
     /**
      * 指定数据源名称
      *
-     * @return
+     * @return value
      */
     String direct() default "";
 

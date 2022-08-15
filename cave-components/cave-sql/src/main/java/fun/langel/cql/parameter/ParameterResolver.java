@@ -39,7 +39,7 @@ public class ParameterResolver {
     /**
      * @param sql
      * @param args
-     * @return {@link  Pair<String, List<Parameter>> }
+     * @return value
      * left : origin sql
      * right : parameterized sql
      */

@@ -6,6 +6,7 @@ import fun.langel.cql.reflect.Field;
 import fun.langel.cql.reflect.Klass;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +48,19 @@ public class Row implements ReturnValue<Map<java.lang.String, ReturnValue<?>>> {
             throw new MappingException(e.getMessage(), e);
         }
         for (Field f : cKls.fields()) {
-            ReturnValue<?> v = columns.get(f.getName());
+            ReturnValue<?> v = null;
+            List<java.lang.String> alias = f.alias();
+            if (alias != null) {
+                for (java.lang.String an : alias) {
+                    v = columns.get(an);
+                    if (v != null) {
+                        break;
+                    }
+                }
+            }
+            if (v == null) {
+                v = columns.get(f.getName());
+            }
             if (v == null) {
                 continue;
             }
