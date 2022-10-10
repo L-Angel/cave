@@ -42,7 +42,6 @@ public class CaveMethod {
 
     public Object execute(Object... values) {
         checkArguments(values);
-
         Arg[] args = args(this.signature.method.getParameters(), values);
         Target target = target(args);
         Invoker invoker = Invoker.EMPTY;

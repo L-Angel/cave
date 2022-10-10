@@ -1,5 +1,7 @@
 package fun.langel.cql.cave;
 
+import fun.langel.cql.annotation.CField;
+
 import java.io.Serializable;
 
 /**
@@ -10,6 +12,7 @@ public class Model implements Serializable {
 
     private String field1;
 
+    @CField(alias = "demo_field2")
     private String field2;
 
     private String field3;

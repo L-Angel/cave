@@ -57,25 +57,5 @@ public class ElasticSearchRvResolver implements RvResolver<SearchResponse> {
         return row;
     }
 
-    private ReturnValue<?> resolveObj(Object v) {
-        if (v == null) {
-            return null;
-        }
-        if (v instanceof String) {
-            return fun.langel.cql.rv.String.of((String) v);
-        }
-        if (int.class.isAssignableFrom(v.getClass()) || (v instanceof Integer)) {
-            return Number.of((Integer) v);
-        }
-        if (long.class.isAssignableFrom(v.getClass()) || (v instanceof Long)) {
-            return Number.of((Long) v);
-        }
-        if (float.class.isAssignableFrom(v.getClass()) || (v instanceof Float)) {
-            return Number.of((Float) v);
-        }
-        if (double.class.isAssignableFrom(v.getClass()) || (v instanceof Double)) {
-            return Number.of((Double) v);
-        }
-        return fun.langel.cql.rv.String.of(String.valueOf(v));
-    }
+   
 }

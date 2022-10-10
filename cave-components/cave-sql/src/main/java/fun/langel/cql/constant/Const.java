@@ -8,4 +8,14 @@ public interface Const {
 
     String CAVE_ELASTICSEARCH_HOST = "cave.elasticsearch.hosts";
 
+    String CAVE_MYSQL_HOST = "cave.mysql.host";
+
+    String CAVE_MYSQL_DBNAME = "cave.mysql.dbName";
+
+    String CAVE_MYSQL_USERNAME = "cave.mysql.userName";
+
+    String CAVE_MYSQL_PASSWORD = "cave.mysql.password";
+
+    String CAVE_JDBC_DRIVER = "cave.jdbc.driver";
+
 }

@@ -8,6 +8,7 @@ import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.util.Pair;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,18 +18,20 @@ import java.util.Map;
  **/
 public abstract class PreparedSession implements Session {
 
-    private List<Parameter> parameters = null;
+    protected List<Parameter> parameters = new LinkedList<>();
+
     private final ParameterResolver resolver = new ParameterResolver();
 
 
     public void setParameters(final List<Parameter> parameters) {
-        this.parameters = parameters;
+        if (parameters != null) {
+            this.parameters.addAll(parameters);
+        }
     }
 
 
     @Override
     public ReturnValue<?> executeQuery(String sql) {
-
         return this.executeQuery0(prepareSql(sql));
     }
 

@@ -57,6 +57,7 @@
         <spring.version>5.1.8.RELEASE</spring.version>
         <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
         <slf4j.version>1.7.9</slf4j.version>
+        <mysql-driver.version>8.0.29</mysql-driver.version>
 
     </properties>
 
@@ -74,6 +75,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-driver.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
