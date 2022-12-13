@@ -1,5 +1,7 @@
-package fun.langel.cql.node;
+package fun.langel.cql.node.func;
 
+import fun.langel.cql.node.Function;
+import fun.langel.cql.node.Node;
 import fun.langel.cql.node.operator.FunctionOperator;
 import fun.langel.cql.node.operator.Operator;
 

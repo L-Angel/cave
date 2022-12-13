@@ -17,6 +17,8 @@ public @interface CaveScan {
 
     String[] packages();
 
+    boolean useDefaultElasticSearch()  default false;
+
     DataSource[] datasource() default {};
 
 }

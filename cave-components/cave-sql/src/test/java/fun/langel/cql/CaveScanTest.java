@@ -1,10 +1,8 @@
 package fun.langel.cql;
 
 import fun.langel.cql.annotation.CaveScan;
-import fun.langel.cql.annotation.DataSource;
 import fun.langel.cql.cave.CaveDemo;
 import fun.langel.cql.cave.Model;
-import fun.langel.cql.datasource.support.ElasticSearchDataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +16,7 @@ import java.util.List;
  **/
 @RunWith(SpringRunner.class)
 @CaveScan(packages = {"fun.langel.cql.cave"},
-        datasource = {@DataSource(name = "defaultEs", klass = ElasticSearchDataSource.class, priority = 1)})
+        useDefaultElasticSearch = true)
 public class CaveScanTest {
 
     static {
@@ -35,7 +33,8 @@ public class CaveScanTest {
 
     @Test
     public void test_queryEs_list() {
-        List<Model> r = caveDemo.queryList("value1");
+        // List<Model> r = caveDemo.queryList("value1");
+        List<Model> r = caveDemo.queryListWithDefaultEs("value1");
 
         System.out.println(r);
     }

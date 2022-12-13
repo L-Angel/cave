@@ -3,6 +3,7 @@ package fun.langel.cql.bind;
 import fun.langel.cql.annotation.*;
 import fun.langel.cql.datasource.DataSource;
 import fun.langel.cql.datasource.DataSourceHolder;
+import fun.langel.cql.exception.DataSourceException;
 import fun.langel.cql.invoke.Invocation;
 import fun.langel.cql.invoke.Invoker;
 import fun.langel.cql.invoke.Result;
@@ -13,6 +14,7 @@ import fun.langel.cql.invoke.support.UpdateInvoker;
 import fun.langel.cql.parameter.ParameterResolver;
 import fun.langel.cql.spring.Configuration;
 import fun.langel.cql.util.Pair;
+import fun.langel.cql.util.StringUtil;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -51,6 +53,9 @@ public class CaveMethod {
         Pair<String, List<fun.langel.cql.parameter.Parameter>> pair = resolver.resolve(this.signature.sql(), args);
 
         DataSourceHolder holder = resolveDataSource(this.signature.direct());
+        if (holder == null) {
+            throw new DataSourceException("Not matched any datasource " + this.signature.direct);
+        }
         if (this.signature.isSelect()) {
             invoker = new SelectInvoker(target, holder.getDataSource(), this.signature.sql(), pair);
         } else if (this.signature.isDelete()) {
@@ -91,6 +96,9 @@ public class CaveMethod {
 
 
     private DataSourceHolder resolveDataSource(final String direct) {
+        if (StringUtil.isEmpty(direct)) {
+            return this.configuration.getFirstDataSource();
+        }
         return this.configuration.getDataSource(direct);
     }
 

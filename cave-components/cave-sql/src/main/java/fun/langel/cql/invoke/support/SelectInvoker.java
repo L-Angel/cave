@@ -32,13 +32,7 @@ public class SelectInvoker extends AbstractInvoker {
     @Override
     public Result invoke(Invocation iv) {
         Session session = getSession();
-        if (session == null) {
-            throw new DataSourceException("Dont find any matched datasource.");
-        }
         Language lang = session.lang();
-        if (session instanceof PreparedSession) {
-            ((PreparedSession) session).setParameters(parameterized().right());
-        }
         ReturnValue<?> rv = null;
         if (lang == Language.ELASTIC_SEARCH) {
             rv = session.executeQuery(this.sql());

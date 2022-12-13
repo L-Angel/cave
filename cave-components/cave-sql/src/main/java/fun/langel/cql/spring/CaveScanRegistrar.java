@@ -3,8 +3,9 @@ package fun.langel.cql.spring;
 
 import fun.langel.cql.Cave;
 import fun.langel.cql.annotation.CaveScan;
-import fun.langel.cql.annotation.DataSource;
+import fun.langel.cql.datasource.DataSource;
 import fun.langel.cql.datasource.DataSourceHolder;
+import fun.langel.cql.datasource.support.ElasticSearchDataSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.Aware;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -29,16 +30,18 @@ public class CaveScanRegistrar implements ImportBeanDefinitionRegistrar {
     }
 
     @Override
-    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata,
-                                        BeanDefinitionRegistry registry) {
-        AnnotationAttributes caveScanAttrs = AnnotationAttributes
-                .fromMap(annotationMetadata.getAnnotationAttributes(CaveScan.class.getName()));
+    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
+        AnnotationAttributes caveScanAttrs = AnnotationAttributes.fromMap(annotationMetadata.getAnnotationAttributes(CaveScan.class.getName()));
         String[] packages = caveScanAttrs.getStringArray("packages");
+        boolean useDefaultElasticSearch = caveScanAttrs.getBoolean("useDefaultElasticSearch");
         AnnotationAttributes[] datasourceAttr = caveScanAttrs.getAnnotationArray("datasource");
 
         CaveClassPathBeanDefinitionScanner scanner = new CaveClassPathBeanDefinitionScanner(registry, false);
         // recognize datasource
         this.configuration.setDataSource(resolveDataSources(datasourceAttr));
+        if (useDefaultElasticSearch) {
+            this.configuration.addDataSource(resolveDatasource("default_es", ElasticSearchDataSource.class));
+        }
         scanner.setConfiguration(this.configuration);
         scanner.setAnnotationKlass(fun.langel.cql.annotation.Cave.class);
         scanner.registerIncludeFilter();
@@ -51,11 +54,16 @@ public class CaveScanRegistrar implements ImportBeanDefinitionRegistrar {
         for (int idx = 0, len = attributes.length; idx < len; idx++) {
             AnnotationAttributes attr = attributes[idx];
             final String name = attr.getString("name");
-            final Class<?> klass = attr.getClass("klass");
+            final Class<? extends DataSource> klass = attr.getClass("klass");
             final int priority = attr.getNumber("priority");
-            holders.add(new DataSourceHolder(klass, name, priority));
+            DataSourceHolder holder = DataSourceHolder.builder().setKlass(klass).setName(name).setPriority(priority).build();
+            holders.add(holder);
         }
         return holders;
+    }
+
+    private DataSourceHolder resolveDatasource(String name, Class<? extends DataSource> klass) {
+        return DataSourceHolder.builder().setKlass(klass).setName(name).setPriority(0).build();
     }
 
 

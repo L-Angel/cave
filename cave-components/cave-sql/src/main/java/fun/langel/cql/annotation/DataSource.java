@@ -9,6 +9,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
+@Inherited
 public @interface DataSource {
 
     String name() default "";
@@ -16,4 +17,5 @@ public @interface DataSource {
     Class<? extends fun.langel.cql.datasource.DataSource> klass() default fun.langel.cql.datasource.DataSource.class;
 
     int priority() default 0;
+
 }

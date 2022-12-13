@@ -21,4 +21,8 @@ public interface CaveDemo {
             direct = "defaultEs"
             , returnType = Model.class)
     List<Model> queryList(@Param(name = "param1") String param1);
+
+
+    @Select(sql = "select fielda from demo_index where c_exists('fieldb') and c_script(`doc['safe@limit'].value>doc['available'].value`)")
+    List<Model> queryListWithDefaultEs(@Param(name = "param1") String param1);
 }

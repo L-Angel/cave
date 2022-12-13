@@ -84,12 +84,15 @@ class ElasticSearchConnection implements Connection {
 
     private void prepareConnect() {
         // Create the low-level client
-        RestClient httpClient = RestClient.builder(this.hosts).build();
+        // RestClient httpClient = RestClient.builder(this.hosts).build();
 
 // Create the HLRC
-        this.restClient = new RestHighLevelClientBuilder(httpClient)
-                .setApiCompatibilityMode(true)
-                .build();
+//         this.restClient = new RestHighLevelClientBuilder(httpClient)
+//                 .setApiCompatibilityMode(true)
+//                 .build();
+
+        this.restClient = new RestHighLevelClient(RestClient.builder(this.hosts));
+
     }
 
     @Override

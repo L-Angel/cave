@@ -17,13 +17,13 @@ public class DataSourceHolder {
 
     private final String name;
 
-    private final Class<?> klass;
+    private final Class<? extends DataSource> klass;
 
     private final int priority;
 
-    public DataSourceHolder(final Class<?> klass,
-                            final String name,
-                            final int priority) {
+    private DataSourceHolder(final Class<? extends DataSource> klass,
+                             final String name,
+                             final int priority) {
         this.klass = klass;
         this.name = name;
         this.priority = priority;
@@ -68,4 +68,38 @@ public class DataSourceHolder {
         return this.klass;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private Class<? extends DataSource> klass;
+
+        private String name;
+
+        private int priority;
+
+        private Builder() {
+        }
+
+        public Builder setKlass(final Class<? extends DataSource> klass) {
+            this.klass = klass;
+            return this;
+        }
+
+        public Builder setName(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setPriority(final int priority) {
+            this.priority = priority;
+            return this;
+        }
+
+        public DataSourceHolder build() {
+            return new DataSourceHolder(this.klass, this.name, this.priority);
+        }
+    }
 }

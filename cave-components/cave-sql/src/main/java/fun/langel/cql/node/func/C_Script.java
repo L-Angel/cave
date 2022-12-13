@@ -1,4 +1,9 @@
-package fun.langel.cql.node;
+package fun.langel.cql.node.func;
+
+import fun.langel.cql.node.Function;
+import fun.langel.cql.node.Script;
+import fun.langel.cql.node.operator.FunctionOperator;
+import fun.langel.cql.node.operator.Operator;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -15,6 +20,11 @@ public class C_Script implements Function {
     @Override
     public Script executable() {
         return this.executable;
+    }
+
+    @Override
+    public Operator operator() {
+        return FunctionOperator.C_SCRIPT;
     }
 
     public static C_Script of(final String script) {

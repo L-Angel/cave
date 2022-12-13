@@ -3,7 +3,9 @@ package fun.langel.cql.invoke;
 import fun.langel.cql.bind.Target;
 import fun.langel.cql.datasource.Connection;
 import fun.langel.cql.datasource.DataSource;
+import fun.langel.cql.datasource.PreparedSession;
 import fun.langel.cql.datasource.Session;
+import fun.langel.cql.exception.DataSourceException;
 import fun.langel.cql.parameter.Parameter;
 import fun.langel.cql.util.Pair;
 
@@ -51,7 +53,14 @@ public abstract class AbstractInvoker implements Invoker {
     }
 
     public Session getSession() {
-        return getConnection() == null ? null : getConnection().getSession();
+        Session session = getConnection() == null ? null : getConnection().getSession();
+        if (session == null) {
+            throw new DataSourceException("Dont find any matched datasource.");
+        }
+        if (session instanceof PreparedSession) {
+            ((PreparedSession) session).setParameters(parameterized().right());
+        }
+        return session;
     }
 
     public Pair<String, List<Parameter>> parameterized() {

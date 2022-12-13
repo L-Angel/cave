@@ -5,6 +5,8 @@ import fun.langel.cql.enums.Order;
 import fun.langel.cql.exception.SqlException;
 import fun.langel.cql.exception.UnsupportCqlFunctionException;
 import fun.langel.cql.node.*;
+import fun.langel.cql.node.func.C_Exists;
+import fun.langel.cql.node.func.C_Script;
 import fun.langel.cql.node.operator.LogicalOperator;
 import fun.langel.cql.node.operator.Operator;
 import fun.langel.cql.node.operator.RelOperator;
