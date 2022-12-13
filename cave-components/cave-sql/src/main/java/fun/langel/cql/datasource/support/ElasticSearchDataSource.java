@@ -50,7 +50,6 @@ public class ElasticSearchDataSource implements DataSource {
     }
 
     public Connection createConnection(Properties props) {
-
         return new ElasticSearchConnection(props);
     }
 

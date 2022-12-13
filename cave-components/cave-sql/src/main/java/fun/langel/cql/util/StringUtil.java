@@ -32,6 +32,19 @@ public class StringUtil {
         }
     }
 
+    public static String stripQuote(String v) {
+        if (isEmpty(v)) {
+            return v;
+        }
+        if ((v.startsWith("'") && v.endsWith("'"))
+                || (v.startsWith("`") && v.endsWith("`"))
+                || (v.startsWith("\"") && v.endsWith("\""))) {
+            return v.substring(1, v.length() - 1);
+        }
+        return v;
+    }
+
+
     public static String stripStart(String str, String stripChars) {
         int strLen;
         if (str != null && (strLen = str.length()) != 0) {

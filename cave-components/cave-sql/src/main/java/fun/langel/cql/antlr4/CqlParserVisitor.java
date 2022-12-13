@@ -3653,6 +3653,13 @@ public interface CqlParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSubqueryExpressionAtom(CqlParser.SubqueryExpressionAtomContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code cqlWhereFunctionAtom}
+	 * labeled alternative in {@link CqlParser#expressionAtom}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCqlWhereFunctionAtom(CqlParser.CqlWhereFunctionAtomContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code constantExpressionAtom}
 	 * labeled alternative in {@link CqlParser#expressionAtom}.
 	 * @param ctx the parse tree
@@ -3687,6 +3694,20 @@ public interface CqlParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitBitExpressionAtom(CqlParser.BitExpressionAtomContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code c_existsExpressionAtom}
+	 * labeled alternative in {@link CqlParser#cqlWhereFunction}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitC_existsExpressionAtom(CqlParser.C_existsExpressionAtomContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code c_scriptExpressionAtom}
+	 * labeled alternative in {@link CqlParser#cqlWhereFunction}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitC_scriptExpressionAtom(CqlParser.C_scriptExpressionAtomContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CqlParser#unaryOperator}.
 	 * @param ctx the parse tree

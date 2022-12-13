@@ -5,6 +5,7 @@ import fun.langel.cql.node.Value;
 import fun.langel.cql.reflect.Field;
 import fun.langel.cql.reflect.Klass;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class Row implements ReturnValue<Map<java.lang.String, ReturnValue<?>>> {
 
     @Override
     public Object mapTo(Class<?> klass) throws MappingException {
+        Type t=klass;
 
         Klass cKls = Klass.of(klass);
         Object o = null;

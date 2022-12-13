@@ -45,7 +45,7 @@ public class SelectInvoker extends AbstractInvoker {
         }
 
         Result result = new Result();
-        result.setValue(rv == null ? null : rv.mapTo(iv.actualType()));
+        result.setValue(rv == null ? null : rv.mapTo((Class<?>) iv.actualType()));
         return result;
     }
 

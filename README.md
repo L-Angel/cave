@@ -20,6 +20,8 @@ Cave
 | springframework                       |     ||
 | springboot                            |     |optional|
 
+# 设计架构
+
 # 使用
 
 1. Pom引入
@@ -82,3 +84,21 @@ public class CaveDemo{
     }
 }
 ```
+
+# CQL支持的语法
+```
+like
+not like
+= (equal)
+!= (not equal)
+> (greater)
+< (less)
+>= (greater or equals)
+<= (less or equals)
+and 
+or
+```
+
+## 函数
+- **c_exists('colName')** ES
+- **c_script('script'')** ES

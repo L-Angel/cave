@@ -3,6 +3,7 @@ package fun.langel.cql.antlr4;
 import fun.langel.cql.antlr4.CqlParser.SqlStatementContext;
 import fun.langel.cql.enums.Order;
 import fun.langel.cql.exception.SqlException;
+import fun.langel.cql.exception.UnsupportCqlFunctionException;
 import fun.langel.cql.node.*;
 import fun.langel.cql.node.operator.LogicalOperator;
 import fun.langel.cql.node.operator.Operator;
@@ -191,9 +192,28 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
             Operator operator = LogicalOperator.of(logical.getText());
             Node r = visitExpr(right);
             return new ExprImpl(l, operator, r);
+        }
+        if (tree.getChildCount() == 1 && tree.getChild(0) instanceof CqlParser.CqlWhereFunctionAtomContext) {
+            return visitCqlWhereFunctionAtom((CqlParser.CqlWhereFunctionAtomContext) tree.getChild(0));
         } else {
             throw new SqlException("Illegal sql expression grammar! " + tree.getText());
         }
+    }
+
+    @Override
+    public Expr visitCqlWhereFunctionAtom(CqlParser.CqlWhereFunctionAtomContext ctx) {
+        if (ctx.getChildCount() == 1) {
+            if (ctx.getChild(0) instanceof CqlParser.C_existsExpressionAtomContext) {
+                CqlParser.FullColumnNameContext fullCol = (CqlParser.FullColumnNameContext) ctx.getChild(0).getChild(2);
+                return C_Exists.of(Column.of(fullCol.getText()));
+            } else if (ctx.getChild(0) instanceof CqlParser.C_scriptExpressionAtomContext) {
+                TerminalNode terminal = (TerminalNode) ctx.getChild(0).getChild(2);
+                return C_Script.of(terminal.toString());
+            }
+            throw new UnsupportCqlFunctionException(ctx.getChild(0).getText());
+
+        }
+        throw new IllegalArgumentException("cql where function must have 1 parameter");
     }
 
     @Override

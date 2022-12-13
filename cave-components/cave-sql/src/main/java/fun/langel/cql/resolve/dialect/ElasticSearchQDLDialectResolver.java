@@ -3,10 +3,7 @@ package fun.langel.cql.resolve.dialect;
 import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.dialect.ElasticSearchQDL;
 import fun.langel.cql.node.*;
-import fun.langel.cql.node.operator.BetweenOperator;
-import fun.langel.cql.node.operator.LogicalOperator;
-import fun.langel.cql.node.operator.Operator;
-import fun.langel.cql.node.operator.RelOperator;
+import fun.langel.cql.node.operator.*;
 import fun.langel.cql.resolve.DialectResolver;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.util.ListUtil;
@@ -16,6 +13,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.script.Script;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.util.Collections;
@@ -63,7 +61,6 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             return builders;
         } else if (operator instanceof RelOperator) {
             String name = ((Column) expr.left()).name();
-
             if (operator == RelOperator.IN || operator == RelOperator.NOT_IN) {
                 Range range = (Range) expr.right();
                 if (operator == RelOperator.IN) {
@@ -112,6 +109,14 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             rqb.from(expr.begin().value());
             rqb.to(expr.end().value());
             return Collections.singletonList(rqb);
+        } else if (operator instanceof FunctionOperator) {
+            if (operator == FunctionOperator.C_EXISTS) {
+                C_Exists c_exists = (C_Exists) expr;
+                return Collections.singletonList(QueryBuilders.existsQuery(c_exists.executable().toString()));
+            } else if (operator == FunctionOperator.C_SCRIPT) {
+                C_Script c_script = (C_Script) expr;
+                return Collections.singletonList(QueryBuilders.scriptQuery(new Script(c_script.executable().toString())));
+            }
         }
 
         return Collections.emptyList();

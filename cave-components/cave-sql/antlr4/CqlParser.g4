@@ -2399,6 +2399,7 @@ levelInWeightListElement
     : decimalLiteral orderType=(ASC | DESC | REVERSE)?
     ;
 
+
 aggregateWindowedFunction
     : (AVG | MAX | MIN | SUM)
       '(' aggregator=(ALL | DISTINCT)? functionArg ')' overClause?
@@ -2531,6 +2532,12 @@ expressionAtom
     | left=expressionAtom bitOperator right=expressionAtom          #bitExpressionAtom
     | left=expressionAtom mathOperator right=expressionAtom         #mathExpressionAtom
     | left=expressionAtom jsonOperator right=expressionAtom         #jsonExpressionAtom
+    | cqlWhereFunction                                              #cqlWhereFunctionAtom
+    ;
+
+cqlWhereFunction
+    : C_EXISTS '(' fullColumnName ')'                               #c_existsExpressionAtom
+    | C_SCRIPT '(' STRING_LITERAL ')'                               #c_scriptExpressionAtom
     ;
 
 unaryOperator

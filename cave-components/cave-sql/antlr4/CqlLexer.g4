@@ -96,6 +96,9 @@ ENCLOSED:                            'ENCLOSED';
 ESCAPED:                             'ESCAPED';
 EXCEPT:                              'EXCEPT';
 EXISTS:                              'EXISTS';
+// cql where function
+C_EXISTS:                            'C_EXISTS';
+C_SCRIPT:                            'C_SCRIPT';
 EXIT:                                'EXIT';
 EXPLAIN:                             'EXPLAIN';
 FALSE:                               'FALSE';
@@ -323,6 +326,7 @@ JSON_STORAGE_SIZE:                   'JSON_STORAGE_SIZE';
 JSON_ARRAYAGG:                       'JSON_ARRAYAGG';
 JSON_OBJECTAGG:                      'JSON_OBJECTAGG';
 
+// ElasticSearch QDL keywords
 // Group function Keywords
 
 AVG:                                 'AVG';

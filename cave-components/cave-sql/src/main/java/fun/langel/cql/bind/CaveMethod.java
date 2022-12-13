@@ -16,6 +16,8 @@ import fun.langel.cql.util.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -130,19 +132,15 @@ public class CaveMethod {
         public void parse() {
             if (selectAnno != null) {
                 this.sql = this.selectAnno.sql();
-                this.returnType = this.selectAnno.returnType();
                 this.direct = this.selectAnno.direct();
             } else if (deleteAnno != null) {
                 this.sql = this.deleteAnno.sql();
-                this.returnType = this.deleteAnno.returnType();
                 this.direct = this.deleteAnno.direct();
             } else if (insertAnno != null) {
                 this.sql = this.insertAnno.sql();
-                this.returnType = this.insertAnno.returnType();
                 this.direct = this.insertAnno.direct();
             } else if (updateAnno != null) {
                 this.sql = this.updateAnno.sql();
-                this.returnType = this.updateAnno.returnType();
                 this.direct = this.updateAnno.direct();
 
             }
@@ -170,7 +168,10 @@ public class CaveMethod {
 
         public Class<?> actualType() {
             if (List.class.isAssignableFrom(returnType())) {
-                return this.returnType;
+                if (Object.class != this.returnType) {
+                    return this.returnType;
+                }
+                return (Class<?>) ((ParameterizedType) this.method.getGenericReturnType()).getActualTypeArguments()[0];
             }
             return returnType();
         }

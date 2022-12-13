@@ -1,6 +1,7 @@
 package fun.langel.cql.node;
 
 import fun.langel.cql.enums.Order;
+import fun.langel.cql.util.StringUtil;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -20,7 +21,7 @@ public class Column implements Terminal, Expr, Node {
     }
 
     private Column(final String name, final String alias, final Order order) {
-        this.name = name;
+        this.name = StringUtil.strip(name, "'");
         this.alias = alias;
         this.order = order;
     }
@@ -37,6 +38,10 @@ public class Column implements Terminal, Expr, Node {
         return new Column(name, alias, order);
     }
 
+    @Override
+    public String toString() {
+        return StringUtil.isEmpty(this.alias) ? this.name : this.alias;
+    }
 
     public String name() {
         return this.name;
