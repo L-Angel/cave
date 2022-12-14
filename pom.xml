@@ -163,35 +163,6 @@
         </testResources>
 
         <plugins>
-            <!--            <plugin>-->
-            <!--                <groupId>org.antlr</groupId>-->
-            <!--                <artifactId>antlr4-maven-plugin</artifactId>-->
-            <!--                <version>${antlr.version}</version>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <id>antlr</id>-->
-            <!--                        <goals>-->
-            <!--                            <goal>antlr4</goal>-->
-            <!--                        </goals>-->
-            <!--                        <phase>compile</phase>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-
-            <!--                <configuration>-->
-            <!--                    &lt;!&ndash;指定导入语法和标记文件的位置。&ndash;&gt;-->
-            <!--                    <libDirectory>src/main/antlr4/imports</libDirectory>-->
-            <!--                    &lt;!&ndash;ANTLR语法文件(*.g4)所在的目录。&ndash;&gt;-->
-            <!--                    <sourceDirectory>src/main/antlr4</sourceDirectory>-->
-            <!--                    &lt;!&ndash;指定生成Java文件的输出目录。&ndash;&gt;-->
-            <!--                    <outputDirectory>src/main/java</outputDirectory>-->
-            <!--                    &lt;!&ndash;生成解析树侦听器接口和基类。&ndash;&gt;-->
-            <!--                    <listener>true</listener>-->
-            <!--                    &lt;!&ndash;生成解析树访问者接口和基类。&ndash;&gt;-->
-            <!--                    <visitor>true</visitor>-->
-            <!--                    <treatWarningsAsErrors>true</treatWarningsAsErrors>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
-
             <!-- verify gpg, generate asc files. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

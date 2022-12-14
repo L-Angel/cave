@@ -13,6 +13,12 @@ import fun.langel.cql.resolve.rv.ElasticSearchRvResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.statement.SelectStatement;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.*;
@@ -90,8 +96,22 @@ class ElasticSearchConnection implements Connection {
 //         this.restClient = new RestHighLevelClientBuilder(httpClient)
 //                 .setApiCompatibilityMode(true)
 //                 .build();
+        final CredentialsProvider credentialsProvider =
+                new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(this.props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME),
+                        this.props.getProperty(Const.CAVE_ELASTICSEARCH_PASSWORD)));
 
-        this.restClient = new RestHighLevelClient(RestClient.builder(this.hosts));
+        this.restClient = new RestHighLevelClient(RestClient.builder(this.hosts)
+                .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+                    @Override
+                    public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpAsyncClientBuilder) {
+                        httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                        //线程设置
+                        httpAsyncClientBuilder.setDefaultIOReactorConfig(IOReactorConfig.custom().setIoThreadCount(10).build());
+                        return httpAsyncClientBuilder;
+                    }
+                }));
 
     }
 
