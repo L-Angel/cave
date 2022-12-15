@@ -2,11 +2,13 @@ package fun.langel.cql.resolve.dialect;
 
 import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.dialect.ElasticSearchQDL;
+import fun.langel.cql.enums.Order;
 import fun.langel.cql.node.*;
 import fun.langel.cql.node.func.C_Exists;
 import fun.langel.cql.node.func.C_Script;
 import fun.langel.cql.node.operator.*;
 import fun.langel.cql.statement.SelectStatement;
+import fun.langel.cql.util.ArrayUtil;
 import fun.langel.cql.util.ListUtil;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchType;
@@ -16,6 +18,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -35,15 +39,40 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             ssb.from(statement.limit().offset());
             ssb.size(statement.limit().fetch());
         }
+        ssb.fetchSource(sourceFields(statement.columns()), null);
         BoolQueryBuilder qb = QueryBuilders.boolQuery();
         qb.must().addAll(resolveQueryCondition(statement.where()));
         ssb.query(qb);
+        if (statement.orderBy() != null) {
+            sort(ssb, statement.orderBy());
+        }
 
         List<String> tables = ListUtil.isNullOrEmpty(statement.tables()) ? null : statement.tables().stream().map(Table::getName).map(String::toLowerCase).collect(Collectors.toList());
         SearchRequest sr = new SearchRequest(ListUtil.toStringArray(tables));
         sr.searchType(SearchType.DEFAULT);
         sr.source(ssb);
         return new ElasticSearchQDL(sr);
+    }
+
+    private String[] sourceFields(List<Node> columns) {
+        if (ListUtil.isNullOrEmpty(columns)) {
+            return null;
+        }
+        List<String> fields = columns.stream()
+                .filter(v -> v instanceof Column)
+                .map(v -> ((Column) v).name()).collect(Collectors.toList());
+        return ArrayUtil.toArray(fields);
+    }
+
+    protected void sort(SearchSourceBuilder builder, OrderBy orderBy) {
+        for (Column col : orderBy.columns()) {
+            if (col.order() == Order.ASC) {
+                builder.sort(col.name(), SortOrder.ASC);
+            } else {
+                builder.sort(col.name(), SortOrder.DESC);
+            }
+        }
+
     }
 
     private List<QueryBuilder> resolveQueryCondition(Expr expr) {
@@ -65,10 +94,10 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             if (operator == RelOperator.IN || operator == RelOperator.NOT_IN) {
                 Range range = (Range) expr.right();
                 if (operator == RelOperator.IN) {
-                    return Collections.singletonList(QueryBuilders.termsQuery(name, range.values().stream().map(Value::value).collect(Collectors.toList())));
+                    return Collections.singletonList(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList())));
                 } else if (operator == RelOperator.NOT_IN) {
                     BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-                    bqb.mustNot(QueryBuilders.termsQuery(name, range.values().stream().map(Value::value).collect(Collectors.toList())));
+                    bqb.mustNot(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList())));
                     return Collections.singletonList(bqb);
                 }
             } else {

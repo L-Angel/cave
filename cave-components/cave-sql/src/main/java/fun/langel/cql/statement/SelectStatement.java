@@ -11,7 +11,7 @@ import java.util.List;
  **/
 public interface SelectStatement extends Statement {
 
-    default List<Column> columns() {
+    default List<Node> columns() {
         return Collections.emptyList();
     }
 
@@ -24,6 +24,10 @@ public interface SelectStatement extends Statement {
     }
 
     default OrderBy orderBy() {
+        return null;
+    }
+
+    default GroupBy groupBy() {
         return null;
     }
 }

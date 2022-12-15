@@ -6,19 +6,31 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package fun.langel.cql.exception;
+package fun.langel.cql.node.func;
+
+import fun.langel.cql.node.Column;
+import fun.langel.cql.node.Function;
+import fun.langel.cql.node.Node;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
- * @since 2022/8/10 16:14
+ * @date 2022/12/15 21:09
  **/
-public class DataSourceException extends RuntimeException {
+public class Avg implements Function {
 
+    private final Column executable;
 
-    public DataSourceException() {
+    private Avg(final Column executable) {
+        this.executable = executable;
     }
 
-    public DataSourceException(String message) {
-        super(message);
+    @Override
+    public Node executable() {
+        return this.executable;
     }
+
+    public static Avg of(Column col) {
+        return new Avg(col);
+    }
+
 }

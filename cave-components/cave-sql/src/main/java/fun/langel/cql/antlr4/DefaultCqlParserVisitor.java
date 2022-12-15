@@ -5,6 +5,7 @@ import fun.langel.cql.enums.Order;
 import fun.langel.cql.exception.SqlException;
 import fun.langel.cql.exception.UnsupportCqlFunctionException;
 import fun.langel.cql.node.*;
+import fun.langel.cql.node.func.Avg;
 import fun.langel.cql.node.func.C_Exists;
 import fun.langel.cql.node.func.C_Script;
 import fun.langel.cql.node.operator.LogicalOperator;
@@ -20,6 +21,7 @@ import fun.langel.cql.util.IntegerUtil;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.security.acl.Group;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -90,7 +92,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
             if (pt instanceof TerminalNode) {
                 System.out.println(pt.getText());
             } else if (pt instanceof CqlParser.SelectElementsContext) {
-                final List<Column> columns = new LinkedList<>();
+                final List<Node> columns = new LinkedList<>();
                 for (int i2 = 0, len2 = pt.getChildCount(); i2 < len2; i2++) {
                     ParseTree p2 = pt.getChild(i2);
                     if (p2 instanceof CqlParser.SelectColumnElementContext) {
@@ -98,6 +100,9 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
                         if (col != null) {
                             columns.add(col);
                         }
+                    } else if (p2 instanceof CqlParser.SelectFunctionElementContext) {
+
+                        columns.add(visitSelectFunctionElement((CqlParser.SelectFunctionElementContext) p2));
                     }
                 }
                 statement.setColumns(columns);
@@ -107,9 +112,59 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
                 statement.setOrderBy(visitOrderByClause((CqlParser.OrderByClauseContext) pt));
             } else if (pt instanceof CqlParser.LimitClauseContext) {
                 statement.setLimit(visitLimitClause((CqlParser.LimitClauseContext) pt));
+            } else if (pt instanceof CqlParser.GroupByClauseContext) {
+                statement.setGroupBy(visitGroupByClause((CqlParser.GroupByClauseContext) pt));
             }
         }
         return statement;
+    }
+
+    @Override
+    public Function visitSelectFunctionElement(CqlParser.SelectFunctionElementContext ctx) {
+        if (ctx.getChild(0) instanceof CqlParser.AggregateFunctionCallContext) {
+            return visitAggregateFunctionCall((CqlParser.AggregateFunctionCallContext) ctx.getChild(0));
+        }
+        return null;
+    }
+
+    @Override
+    public Function visitAggregateFunctionCall(CqlParser.AggregateFunctionCallContext ctx) {
+        if (ctx.getChild(0) instanceof CqlParser.AggregateWindowedFunctionContext) {
+            return visitAggregateWindowedFunction((CqlParser.AggregateWindowedFunctionContext) ctx.getChild(0));
+        }
+        return null;
+    }
+
+    @Override
+    public Function visitAggregateWindowedFunction(CqlParser.AggregateWindowedFunctionContext ctx) {
+        String functionName = ctx.getChild(0).getText();
+
+        for (int idx = 1, len = ctx.getChildCount(); idx < len; idx++) {
+            ParseTree pt = ctx.getChild(idx);
+            if ("avg".equalsIgnoreCase(functionName) && (pt instanceof CqlParser.FunctionArgContext)) {
+                return Avg.of(Column.of(pt.getText()));
+            }
+        }
+        return null;
+    }
+
+
+    @Override
+    public GroupBy visitGroupByClause(CqlParser.GroupByClauseContext ctx) {
+        GroupBy groupBy = GroupBy.ofEmpty();
+        for (int idx = 0; idx < ctx.getChildCount(); idx++) {
+            ParseTree pt = ctx.getChild(idx);
+            if (pt instanceof CqlParser.GroupByItemContext) {
+                groupBy.add(visitGroupByItem((CqlParser.GroupByItemContext) pt));
+            }
+
+        }
+        return groupBy;
+    }
+
+    @Override
+    public Column visitGroupByItem(CqlParser.GroupByItemContext ctx) {
+        return Column.of(ctx.getText());
     }
 
     @Override
@@ -165,6 +220,9 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
     }
 
     private Expr visitExpr(ParseTree tree) {
+        if (tree == null) {
+            return null;
+        }
         if (tree instanceof CqlParser.PredicateExpressionContext) {
             return visitExpr(tree.getChild(0));
         }
@@ -174,9 +232,9 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         if (tree instanceof CqlParser.InPredicateContext) {
             return visitInPredicate((CqlParser.InPredicateContext) tree);
         }
-        if (tree instanceof CqlParser.LikePredicateContext) {
-            visitLikePredicate((CqlParser.LikePredicateContext) tree);
-        }
+        // if (tree instanceof CqlParser.LikePredicateContext) {
+        //     visitLikePredicate((CqlParser.LikePredicateContext) tree);
+        // }
         if (tree instanceof CqlParser.BinaryComparisonPredicateContext) {
             return visitBinaryComparisonPredicate((CqlParser.BinaryComparisonPredicateContext) tree);
         }
@@ -198,7 +256,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         if (tree.getChildCount() == 1 && tree.getChild(0) instanceof CqlParser.CqlWhereFunctionAtomContext) {
             return visitCqlWhereFunctionAtom((CqlParser.CqlWhereFunctionAtomContext) tree.getChild(0));
         } else {
-            throw new SqlException("Illegal sql expression grammar! " + tree.getText());
+            throw new SqlException("Illegal cql expression grammar! " + tree.getText());
         }
     }
 
@@ -213,7 +271,6 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
                 return C_Script.of(terminal.toString());
             }
             throw new UnsupportCqlFunctionException(ctx.getChild(0).getText());
-
         }
         throw new IllegalArgumentException("cql where function must have 1 parameter");
     }

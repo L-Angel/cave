@@ -6,19 +6,23 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package fun.langel.cql.exception;
+package fun.langel.cql.util;
+
+import java.util.List;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
- * @since 2022/8/10 16:14
+ * @date 2022/12/15 21:50
  **/
-public class DataSourceException extends RuntimeException {
-
-
-    public DataSourceException() {
+public class ArrayUtil {
+    private ArrayUtil() {
     }
 
-    public DataSourceException(String message) {
-        super(message);
+    public static <T> T[] toArray(List<T> list) {
+        if (ListUtil.isNullOrEmpty(list)) {
+            return null;
+        }
+        T[] array = (T[]) new Object[list.size()];
+        return list.toArray(array);
     }
 }

@@ -97,6 +97,11 @@ not like
 <= (less or equals)
 and 
 or
+order by
+between
+is null 
+is not null
+
 ```
 
 ## 函数

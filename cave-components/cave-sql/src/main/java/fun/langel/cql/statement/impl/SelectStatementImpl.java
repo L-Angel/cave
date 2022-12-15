@@ -12,13 +12,15 @@ import java.util.List;
 public class SelectStatementImpl implements SelectStatement {
 
 
-    private List<Column> columns;
+    private List<Node> columns;
 
     private From from;
 
     private OrderBy orderBy;
 
     private Limit limit;
+
+    private GroupBy groupBy;
 
     public SelectStatementImpl() {
     }
@@ -35,8 +37,13 @@ public class SelectStatementImpl implements SelectStatement {
         this.limit = limit;
     }
 
-    public void setColumns(final List<Column> columns) {
+    public void setColumns(final List<Node> columns) {
         this.columns = columns;
+    }
+
+
+    public void setGroupBy(final GroupBy groupBy) {
+        this.groupBy = groupBy;
     }
 
 
@@ -51,7 +58,7 @@ public class SelectStatementImpl implements SelectStatement {
     }
 
     @Override
-    public List<Column> columns() {
+    public List<Node> columns() {
         return this.columns;
     }
 
@@ -71,5 +78,8 @@ public class SelectStatementImpl implements SelectStatement {
         return this.from.tables();
     }
 
-
+    @Override
+    public GroupBy groupBy() {
+        return this.groupBy;
+    }
 }
