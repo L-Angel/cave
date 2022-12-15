@@ -46,7 +46,6 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         if (statement.orderBy() != null) {
             sort(ssb, statement.orderBy());
         }
-
         List<String> tables = ListUtil.isNullOrEmpty(statement.tables()) ? null : statement.tables().stream().map(Table::getName).map(String::toLowerCase).collect(Collectors.toList());
         SearchRequest sr = new SearchRequest(ListUtil.toStringArray(tables));
         sr.searchType(SearchType.DEFAULT);
@@ -61,7 +60,7 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         List<String> fields = columns.stream()
                 .filter(v -> v instanceof Column)
                 .map(v -> ((Column) v).name()).collect(Collectors.toList());
-        return ArrayUtil.toArray(fields);
+        return ListUtil.isNullOrEmpty(fields) ? null : ArrayUtil.toArray(fields);
     }
 
     protected void sort(SearchSourceBuilder builder, OrderBy orderBy) {
