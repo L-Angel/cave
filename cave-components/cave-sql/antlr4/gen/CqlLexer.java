@@ -1,5 +1,4 @@
 // Generated from /Users/guhan/workspace/opensource/cave/cave-components/cave-sql/antlr4/CqlLexer.g4 by ANTLR 4.10.1
-package fun.langel.cql.antlr4;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

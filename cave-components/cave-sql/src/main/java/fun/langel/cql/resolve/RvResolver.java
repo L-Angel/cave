@@ -1,14 +1,17 @@
 package fun.langel.cql.resolve;
 
+import fun.langel.cql.node.Function;
 import fun.langel.cql.rv.Number;
 import fun.langel.cql.rv.ReturnValue;
+
+import java.util.List;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/4/26 17:16
  **/
 public interface RvResolver<F> {
-    ReturnValue<?> resolve(F from);
+    ReturnValue<?> resolve(F from, List<Function> functionCall);
 
     default ReturnValue<?> resolveObj(Object v) {
         if (v == null) {

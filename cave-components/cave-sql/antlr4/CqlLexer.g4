@@ -99,6 +99,7 @@ EXISTS:                              'EXISTS';
 // cql where function
 C_EXISTS:                            'C_EXISTS';
 C_SCRIPT:                            'C_SCRIPT';
+C_KEYVALUE:                          'C_KEYVALUE';
 EXIT:                                'EXIT';
 EXPLAIN:                             'EXPLAIN';
 FALSE:                               'FALSE';

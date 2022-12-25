@@ -1,5 +1,6 @@
 package fun.langel.cql.resolve.rv;
 
+import fun.langel.cql.node.Function;
 import fun.langel.cql.resolve.RvResolver;
 import fun.langel.cql.rv.Number;
 import fun.langel.cql.rv.ReturnValue;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,7 +26,8 @@ public class ElasticSearchRvResolver implements RvResolver<SearchResponse> {
     private static final Logger LOG = LoggerFactory.getLogger(ElasticSearchRvResolver.class);
 
     @Override
-    public ReturnValue<?> resolve(SearchResponse from) {
+    public ReturnValue<?> resolve(SearchResponse from,
+                                  List<Function> functionCall) {
         if (from == null) {
             return null;
         }
@@ -57,5 +60,5 @@ public class ElasticSearchRvResolver implements RvResolver<SearchResponse> {
         return row;
     }
 
-   
+
 }

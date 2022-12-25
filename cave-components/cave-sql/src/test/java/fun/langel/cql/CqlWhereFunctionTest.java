@@ -41,4 +41,19 @@ public class CqlWhereFunctionTest {
         SelectStatement selectStatement = Cql.parseSelectStatement(sql);
         Assert.assertNotNull(selectStatement);
     }
+
+    @Test
+    public void testSql_count() {
+        String sql = "select count(*) from demo_index where fielda='abc'";
+        SelectStatement selectStatement = Cql.parseSelectStatement(sql);
+        Assert.assertNotNull(selectStatement);
+    }
+
+    @Test
+    public void testSql_c_keyvalue(){
+        String sql = "select fielda,c_keyvalue(fatures,'key1') from demo_index where fielda='abc'";
+        SelectStatement selectStatement = Cql.parseSelectStatement(sql);
+        Assert.assertNotNull(selectStatement);
+    }
+
 }

@@ -8,4 +8,8 @@ public interface Function extends Expr {
 
     Node executable();
 
+    // default boolean selectFunctionCall() {
+    //     return false;
+    // }
+
 }

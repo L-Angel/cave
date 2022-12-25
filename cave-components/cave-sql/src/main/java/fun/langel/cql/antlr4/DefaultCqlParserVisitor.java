@@ -5,9 +5,7 @@ import fun.langel.cql.enums.Order;
 import fun.langel.cql.exception.SqlException;
 import fun.langel.cql.exception.UnsupportCqlFunctionException;
 import fun.langel.cql.node.*;
-import fun.langel.cql.node.func.Avg;
-import fun.langel.cql.node.func.C_Exists;
-import fun.langel.cql.node.func.C_Script;
+import fun.langel.cql.node.func.*;
 import fun.langel.cql.node.operator.LogicalOperator;
 import fun.langel.cql.node.operator.Operator;
 import fun.langel.cql.node.operator.RelOperator;
@@ -101,8 +99,10 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
                             columns.add(col);
                         }
                     } else if (p2 instanceof CqlParser.SelectFunctionElementContext) {
-
-                        columns.add(visitSelectFunctionElement((CqlParser.SelectFunctionElementContext) p2));
+                        Function func = visitSelectFunctionElement((CqlParser.SelectFunctionElementContext) p2);
+                        if (func != null) {
+                            columns.add(func);
+                        }
                     }
                 }
                 statement.setColumns(columns);
@@ -123,8 +123,23 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
     public Function visitSelectFunctionElement(CqlParser.SelectFunctionElementContext ctx) {
         if (ctx.getChild(0) instanceof CqlParser.AggregateFunctionCallContext) {
             return visitAggregateFunctionCall((CqlParser.AggregateFunctionCallContext) ctx.getChild(0));
+        } else if (ctx.getChild(0) instanceof CqlParser.SpecificFunctionCallContext) {
+            return visitSpecificFunctionCall((CqlParser.SpecificFunctionCallContext) ctx.getChild(0));
         }
         return null;
+    }
+
+    @Override
+    public Function visitSpecificFunctionCall(CqlParser.SpecificFunctionCallContext ctx) {
+        if (ctx.getChild(0) instanceof CqlParser.C_keyvalueFunctionCallContext) {
+            return visitC_keyvalueFunctionCall((CqlParser.C_keyvalueFunctionCallContext) ctx.getChild(0));
+        }
+        return null;
+    }
+
+    @Override
+    public C_KeyValue visitC_keyvalueFunctionCall(CqlParser.C_keyvalueFunctionCallContext ctx) {
+        return C_KeyValue.of(Column.of(ctx.getChild(2).getText()), ctx.getChild(4).getText());
     }
 
     @Override
@@ -144,6 +159,9 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
             if ("avg".equalsIgnoreCase(functionName) && (pt instanceof CqlParser.FunctionArgContext)) {
                 return Avg.of(Column.of(pt.getText()));
             }
+        }
+        if ("count".equalsIgnoreCase(functionName)) {
+            return Count.of(Column.of(ctx.getChild(2).getText()));
         }
         return null;
     }

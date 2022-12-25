@@ -25,4 +25,18 @@ public interface CaveDemo {
 
     @Select(sql = "select fielda from demo_index where c_exists('fieldb') and c_script(`doc['safe@limit'].value>doc['available'].value`)")
     List<Model> queryListWithDefaultEs(@Param(name = "param1") String param1);
+
+    @Select(sql = "select * from demo_index")
+    String demoQuery(@Param(name = "param2") String param2);
+
+    /**
+     *   BoolQueryBuilder condition1 = QueryBuilders.boolQuery();
+     *   condition1.must(QueryBuilders.existsQuery("SafeInventory@lowerLimit"));
+     *   condition1.must(QueryBuilders.scriptQuery(new Script("doc['SafeInventory@lowerLimit'].value>doc['available_quantity'].value")));
+     *   should.should(condition1);
+     * @return
+     */
+    @Select(sql = "select * from demo_index where c_exists('SafeInventory@lowerLimit') and " +
+            "c_script('doc['SafeInventory@lowerLimit'].value>doc['available_quantity'].value')")
+    List<Model> queryCase();
 }

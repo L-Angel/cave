@@ -38,4 +38,9 @@ public class CaveScanTest {
 
         System.out.println(r);
     }
+
+    @Test
+    public void test_select_star(){
+        caveDemo.demoQuery("value2");
+    }
 }

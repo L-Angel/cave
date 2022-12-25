@@ -1,5 +1,6 @@
 package fun.langel.cql.resolve.rv;
 
+import fun.langel.cql.node.Function;
 import fun.langel.cql.resolve.RvResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.rv.Row;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -20,7 +22,8 @@ public class JdbcRvResolver implements RvResolver<Object> {
     private static final Logger LOG = LoggerFactory.getLogger(JdbcRvResolver.class);
 
     @Override
-    public ReturnValue<?> resolve(Object from) {
+    public ReturnValue<?> resolve(Object from,
+                                  List<Function> functionCall) {
         try {
             if (from instanceof ResultSet) {
                 Rows rows = new Rows();

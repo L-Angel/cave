@@ -10,13 +10,16 @@ import java.io.Serializable;
  **/
 public class Model implements Serializable {
 
+    @CField(alias = "field1")
     private String field1;
 
     @CField(alias = "demo_field2")
     private String field2;
 
+    @CField(alias = "field3")
     private String field3;
 
+    @CField(alias = "field4")
     private int field4;
 
     public String getField1() {

@@ -12,6 +12,8 @@ import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
 import fun.langel.cql.resolve.rv.ElasticSearchRvResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.statement.SelectStatement;
+import fun.langel.cql.util.StatementUtil;
+import fun.langel.cql.util.StringUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -96,11 +98,13 @@ class ElasticSearchConnection implements Connection {
 //         this.restClient = new RestHighLevelClientBuilder(httpClient)
 //                 .setApiCompatibilityMode(true)
 //                 .build();
-        final CredentialsProvider credentialsProvider =
-                new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(this.props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME),
-                        this.props.getProperty(Const.CAVE_ELASTICSEARCH_PASSWORD)));
+        String username = this.props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME);
+        String password = this.props.getProperty(Const.CAVE_ELASTICSEARCH_PASSWORD);
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        if (!StringUtil.isEmpty(username) && !StringUtil.isEmpty(password)) {
+            credentialsProvider.setCredentials(AuthScope.ANY,
+                    new UsernamePasswordCredentials(username, password));
+        }
 
         this.restClient = new RestHighLevelClient(RestClient.builder(this.hosts)
                 .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
@@ -108,7 +112,7 @@ class ElasticSearchConnection implements Connection {
                     public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpAsyncClientBuilder) {
                         httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                         //线程设置
-                        httpAsyncClientBuilder.setDefaultIOReactorConfig(IOReactorConfig.custom().setIoThreadCount(10).build());
+                        // httpAsyncClientBuilder.setDefaultIOReactorConfig(IOReactorConfig.custom().setIoThreadCount(10).build());
                         return httpAsyncClientBuilder;
                     }
                 }));
@@ -151,7 +155,7 @@ class ElasticSearchSession extends PreparedSession {
         Dialect<SearchRequest> dialect = this.dialectResolver.resolve(select);
         try {
             SearchResponse esResp = this.restClient.search(dialect.content(), RequestOptions.DEFAULT);
-            return this.rvResolver.resolve(esResp);
+            return this.rvResolver.resolve(esResp, StatementUtil.selectFunctionCall(select.columns()));
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }

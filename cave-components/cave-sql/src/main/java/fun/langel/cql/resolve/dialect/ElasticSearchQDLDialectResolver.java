@@ -5,6 +5,7 @@ import fun.langel.cql.dialect.ElasticSearchQDL;
 import fun.langel.cql.enums.Order;
 import fun.langel.cql.node.*;
 import fun.langel.cql.node.func.C_Exists;
+import fun.langel.cql.node.func.C_KeyValue;
 import fun.langel.cql.node.func.C_Script;
 import fun.langel.cql.node.operator.*;
 import fun.langel.cql.statement.SelectStatement;
@@ -40,9 +41,11 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             ssb.size(statement.limit().fetch());
         }
         ssb.fetchSource(sourceFields(statement.columns()), null);
-        BoolQueryBuilder qb = QueryBuilders.boolQuery();
-        qb.must().addAll(resolveQueryCondition(statement.where()));
-        ssb.query(qb);
+        if (statement.where() != null) {
+            BoolQueryBuilder qb = QueryBuilders.boolQuery();
+            qb.must().addAll(resolveQueryCondition(statement.where()));
+            ssb.query(qb);
+        }
         if (statement.orderBy() != null) {
             sort(ssb, statement.orderBy());
         }
@@ -58,8 +61,14 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             return null;
         }
         List<String> fields = columns.stream()
-                .filter(v -> v instanceof Column)
-                .map(v -> ((Column) v).name()).collect(Collectors.toList());
+                .filter(v -> (v instanceof Column) || (v instanceof C_KeyValue))
+                .map(v -> {
+                    if (v instanceof C_KeyValue) {
+                        return ((Column) ((C_KeyValue) v).executable()).name();
+                    } else {
+                        return ((Column) v).name();
+                    }
+                }).collect(Collectors.toList());
         return ListUtil.isNullOrEmpty(fields) ? null : ArrayUtil.toArray(fields);
     }
 

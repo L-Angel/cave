@@ -87,6 +87,7 @@ public class CaveDemo{
 
 # CQL支持的语法
 ```
+# 0.0.1 版本
 like
 not like
 = (equal)
@@ -101,9 +102,13 @@ order by
 between
 is null 
 is not null
+# 0.0.2 版本
+count -
+avg
 
 ```
 
 ## 函数
 - **c_exists('colName')** ES
 - **c_script('script'')** ES
+- c_keyvalue(columnName,'key') #解析key-value,K1:V1;K2:V2;

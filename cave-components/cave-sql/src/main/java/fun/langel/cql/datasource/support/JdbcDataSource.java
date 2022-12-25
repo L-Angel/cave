@@ -45,7 +45,7 @@ public class JdbcDataSource implements DataSource {
     }
 
     @Override
-    public Connection getConnection()  {
+    public Connection getConnection() {
 
         final String host = System.getProperty(Const.CAVE_MYSQL_HOST);
         final String dbName = System.getProperty(Const.CAVE_MYSQL_DBNAME);
@@ -102,7 +102,7 @@ class JdbcSession implements Session {
     @Override
     public ReturnValue<?> executeQuery(String sql) {
         try {
-            this.rvResolver.resolve(this.statement.executeQuery(sql));
+            this.rvResolver.resolve(this.statement.executeQuery(sql), null);
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -112,7 +112,7 @@ class JdbcSession implements Session {
     @Override
     public Number executeUpdate(String sql) {
         try {
-            return (Number) this.rvResolver.resolve(this.statement.executeUpdate(sql));
+            return (Number) this.rvResolver.resolve(this.statement.executeUpdate(sql), null);
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -122,7 +122,7 @@ class JdbcSession implements Session {
     @Override
     public Number executeDelete(String sql) {
         try {
-            return (Number) this.rvResolver.resolve(this.statement.executeUpdate(sql));
+            return (Number) this.rvResolver.resolve(this.statement.executeUpdate(sql), null);
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -145,7 +145,7 @@ class JdbcPreparedSession extends PreparedSession {
         try {
             PreparedStatement stat = this.connection.prepareStatement(sql);
             prepare(stat);
-            return this.rvResolver.resolve(stat.executeQuery());
+            return this.rvResolver.resolve(stat.executeQuery(), null);
         } catch (SQLException ex) {
             LOG.error(ex.getMessage(), ex);
             return null;
@@ -157,7 +157,7 @@ class JdbcPreparedSession extends PreparedSession {
         try {
             PreparedStatement stat = this.connection.prepareStatement(sql);
             prepare(stat);
-            return (Number) this.rvResolver.resolve(stat.executeUpdate());
+            return (Number) this.rvResolver.resolve(stat.executeUpdate(), null);
         } catch (SQLException ex) {
             LOG.error(ex.getMessage(), ex);
             return null;
@@ -169,7 +169,7 @@ class JdbcPreparedSession extends PreparedSession {
         try {
             PreparedStatement stat = this.connection.prepareStatement(sql);
             prepare(stat);
-            return (Number) this.rvResolver.resolve(stat.executeUpdate());
+            return (Number) this.rvResolver.resolve(stat.executeUpdate(), null);
         } catch (SQLException ex) {
             LOG.error(ex.getMessage(), ex);
             return null;

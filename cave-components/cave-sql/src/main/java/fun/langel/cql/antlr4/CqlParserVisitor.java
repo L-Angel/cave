@@ -3285,6 +3285,13 @@ public interface CqlParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSimpleFunctionCall(CqlParser.SimpleFunctionCallContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code c_keyvalueFunctionCall}
+	 * labeled alternative in {@link CqlParser#specificFunction}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitC_keyvalueFunctionCall(CqlParser.C_keyvalueFunctionCallContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code dataTypeFunctionCall}
 	 * labeled alternative in {@link CqlParser#specificFunction}.
 	 * @param ctx the parse tree

@@ -12,7 +12,6 @@ public enum LogicalOperator implements Operator {
     AND,
     OR;
 
-
     public static LogicalOperator of(String o) {
         if (StringUtil.isEmpty(o)) {
             return NONE;
