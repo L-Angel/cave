@@ -155,7 +155,7 @@ class ElasticSearchSession extends PreparedSession {
         Dialect<SearchRequest> dialect = this.dialectResolver.resolve(select);
         try {
             SearchResponse esResp = this.restClient.search(dialect.content(), RequestOptions.DEFAULT);
-            return this.rvResolver.resolve(esResp, StatementUtil.selectFunctionCall(select.columns()));
+            return this.rvResolver.resolve(esResp, select.columns());
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }

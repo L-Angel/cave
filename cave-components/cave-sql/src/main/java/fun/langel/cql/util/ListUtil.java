@@ -1,5 +1,7 @@
 package fun.langel.cql.util;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -21,5 +23,9 @@ public class ListUtil {
         }
         String[] arr = new String[v.size()];
         return v.toArray(arr);
+    }
+
+    public static <E> LinkedList<E> toLinkedList(Collection<E> collection) {
+        return new LinkedList<>(collection);
     }
 }

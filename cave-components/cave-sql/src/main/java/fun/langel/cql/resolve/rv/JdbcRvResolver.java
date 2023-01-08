@@ -1,5 +1,6 @@
 package fun.langel.cql.resolve.rv;
 
+import fun.langel.cql.node.Column;
 import fun.langel.cql.node.Function;
 import fun.langel.cql.resolve.RvResolver;
 import fun.langel.cql.rv.ReturnValue;
@@ -23,7 +24,7 @@ public class JdbcRvResolver implements RvResolver<Object> {
 
     @Override
     public ReturnValue<?> resolve(Object from,
-                                  List<Function> functionCall) {
+                                  List<Column> columns) {
         try {
             if (from instanceof ResultSet) {
                 Rows rows = new Rows();

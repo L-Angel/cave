@@ -11,7 +11,7 @@ import java.util.List;
  **/
 public interface SelectStatement extends Statement {
 
-    default List<Node> columns() {
+    default List<Column> columns() {
         return Collections.emptyList();
     }
 

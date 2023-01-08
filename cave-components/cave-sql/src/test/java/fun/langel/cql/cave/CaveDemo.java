@@ -30,13 +30,23 @@ public interface CaveDemo {
     String demoQuery(@Param(name = "param2") String param2);
 
     /**
-     *   BoolQueryBuilder condition1 = QueryBuilders.boolQuery();
-     *   condition1.must(QueryBuilders.existsQuery("SafeInventory@lowerLimit"));
-     *   condition1.must(QueryBuilders.scriptQuery(new Script("doc['SafeInventory@lowerLimit'].value>doc['available_quantity'].value")));
-     *   should.should(condition1);
+     * BoolQueryBuilder condition1 = QueryBuilders.boolQuery();
+     * condition1.must(QueryBuilders.existsQuery("SafeInventory@lowerLimit"));
+     * condition1.must(QueryBuilders.scriptQuery(new Script("doc['SafeInventory@lowerLimit'].value>doc['available_quantity'].value")));
+     * should.should(condition1);
+     *
      * @return
      */
     @Select(sql = "select * from demo_index where c_exists('SafeInventory@lowerLimit') and " +
             "c_script('doc['SafeInventory@lowerLimit'].value>doc['available_quantity'].value')")
     List<Model> queryCase();
+
+    @Select(sql = "select avg('field1') as n_field1,c_keyvalue(field2,'key1') as n_field2" +
+            " from demo_index where c_exists('SafeInventory@lowerLimit')")
+    int demoAvg();
+
+
+    @Select(sql="select count('field1') from demo_index where c_exists('SafeInventory@lowerLimit') ")
+    int demoCount();
+
 }

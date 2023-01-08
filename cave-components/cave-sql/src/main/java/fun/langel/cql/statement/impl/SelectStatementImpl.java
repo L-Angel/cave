@@ -12,7 +12,7 @@ import java.util.List;
 public class SelectStatementImpl implements SelectStatement {
 
 
-    private List<Node> columns;
+    private List<Column> columns;
 
     private From from;
 
@@ -37,7 +37,7 @@ public class SelectStatementImpl implements SelectStatement {
         this.limit = limit;
     }
 
-    public void setColumns(final List<Node> columns) {
+    public void setColumns(final List<Column> columns) {
         this.columns = columns;
     }
 
@@ -58,7 +58,7 @@ public class SelectStatementImpl implements SelectStatement {
     }
 
     @Override
-    public List<Node> columns() {
+    public List<Column> columns() {
         return this.columns;
     }
 

@@ -9,26 +9,35 @@ import fun.langel.cql.util.StringUtil;
  **/
 public class Column implements Terminal, Expr, Node {
 
-    private final String name;
+    private String name;
+
+    private Function function;
 
     private final String alias;
 
     private Order order = Order.NONE;
 
     private Column(final String name, final String alias) {
-        this.name = name;
+        this.name = StringUtil.stripQuote(name);
         this.alias = alias;
     }
 
     private Column(final String name, final String alias, final Order order) {
-        this.name = StringUtil.strip(name, "'");
+        this.name = StringUtil.stripQuote(name);
         this.alias = alias;
         this.order = order;
+    }
+
+    private Column(final Function func, final String alias, final Order order) {
+        this.function = func;
+        this.alias = alias;
+        this.order = order == null ? Order.NONE : order;
     }
 
     public static Column of(final String name) {
         return new Column(name, null);
     }
+
 
     public static Column of(final String name, final String alias) {
         return new Column(name, alias);
@@ -36,6 +45,18 @@ public class Column implements Terminal, Expr, Node {
 
     public static Column of(final String name, final String alias, final Order order) {
         return new Column(name, alias, order);
+    }
+
+    public static Column of(final Function func, final String alias, final Order order) {
+        return new Column(func, alias, order);
+    }
+
+    public static Column of(final Function func, final String alias) {
+        return of(func, alias, Order.NONE);
+    }
+
+    public static Column of(final Function func) {
+        return of(func, null);
     }
 
     @Override
@@ -54,4 +75,13 @@ public class Column implements Terminal, Expr, Node {
     public Order order() {
         return this.order;
     }
+
+    public boolean isFunction() {
+        return this.function != null;
+    }
+
+    public Function function() {
+        return this.function;
+    }
+
 }

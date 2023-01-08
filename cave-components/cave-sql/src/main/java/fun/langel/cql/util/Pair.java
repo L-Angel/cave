@@ -1,5 +1,9 @@
 package fun.langel.cql.util;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  * @since 2022/5/16 15:57
@@ -36,6 +40,12 @@ public class Pair<L, R> {
         return this.right;
     }
 
+    public Map<L, R> toMap() {
+        final Map<L, R> map = new HashMap<>();
+        map.put(left(), right());
+        return map;
+    }
+
     public static class EmptyPair extends Pair {
 
         private EmptyPair(Object left, Object right) {
@@ -46,5 +56,13 @@ public class Pair<L, R> {
             this(null, null);
         }
 
+    }
+
+    public static <K, V> Map<K, V> asMap(List<Pair<K, V>> pairs) {
+        final Map<K, V> map = new HashMap<>();
+        for (Pair<K, V> pair : pairs) {
+            map.put(pair.left(), pair.right());
+        }
+        return map;
     }
 }

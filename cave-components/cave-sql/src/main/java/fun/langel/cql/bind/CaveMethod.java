@@ -71,7 +71,7 @@ public class CaveMethod {
 
 
     private void checkArguments(Object... args) {
-        if (args.length < 0) {
+        if (args != null && args.length < 0) {
             throw new IllegalArgumentException("Illegal argument size.");
         }
     }
@@ -81,6 +81,9 @@ public class CaveMethod {
     }
 
     private Arg[] args(final Parameter[] parameters, Object... values) {
+        if (values == null) {
+            return new Arg[0];
+        }
         final Arg[] args = new Arg[parameters.length];
         for (int idx = 0, len = values.length; idx < len; idx++) {
             Parameter parameter = parameters[idx];

@@ -9,6 +9,10 @@ public class StringUtil {
     private StringUtil() {
     }
 
+    public static String withDefault(String value, String def) {
+        return value == null || value.isEmpty() ? def : value;
+    }
+
     public static String wrap(final Object v) {
         return v == null ? null : v.toString();
     }

@@ -1,5 +1,6 @@
 package fun.langel.cql.resolve;
 
+import fun.langel.cql.node.Column;
 import fun.langel.cql.node.Function;
 import fun.langel.cql.rv.Number;
 import fun.langel.cql.rv.ReturnValue;
@@ -11,7 +12,7 @@ import java.util.List;
  * @since 2022/4/26 17:16
  **/
 public interface RvResolver<F> {
-    ReturnValue<?> resolve(F from, List<Function> functionCall);
+    ReturnValue<?> resolve(F from, List<Column> columns);
 
     default ReturnValue<?> resolveObj(Object v) {
         if (v == null) {

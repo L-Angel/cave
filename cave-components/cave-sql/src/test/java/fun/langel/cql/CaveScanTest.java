@@ -3,6 +3,7 @@ package fun.langel.cql;
 import fun.langel.cql.annotation.CaveScan;
 import fun.langel.cql.cave.CaveDemo;
 import fun.langel.cql.cave.Model;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,13 @@ public class CaveScanTest {
     }
 
     @Test
-    public void test_select_star(){
+    public void test_select_star() {
         caveDemo.demoQuery("value2");
+    }
+
+    @Test
+    public void test_select_count() {
+        int count = caveDemo.demoCount();
+        Assert.assertTrue(count > -2);
     }
 }

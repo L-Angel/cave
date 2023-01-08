@@ -90,7 +90,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
             if (pt instanceof TerminalNode) {
                 System.out.println(pt.getText());
             } else if (pt instanceof CqlParser.SelectElementsContext) {
-                final List<Node> columns = new LinkedList<>();
+                final List<Column> columns = new LinkedList<>();
                 for (int i2 = 0, len2 = pt.getChildCount(); i2 < len2; i2++) {
                     ParseTree p2 = pt.getChild(i2);
                     if (p2 instanceof CqlParser.SelectColumnElementContext) {
@@ -99,9 +99,9 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
                             columns.add(col);
                         }
                     } else if (p2 instanceof CqlParser.SelectFunctionElementContext) {
-                        Function func = visitSelectFunctionElement((CqlParser.SelectFunctionElementContext) p2);
-                        if (func != null) {
-                            columns.add(func);
+                        Column col = visitSelectFunctionElement((CqlParser.SelectFunctionElementContext) p2);
+                        if (col != null) {
+                            columns.add(col);
                         }
                     }
                 }
@@ -120,11 +120,19 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
     }
 
     @Override
-    public Function visitSelectFunctionElement(CqlParser.SelectFunctionElementContext ctx) {
+    public Column visitSelectFunctionElement(CqlParser.SelectFunctionElementContext ctx) {
+        String alias = null;
+        if (ctx.getChildCount() == 2 && ctx.getChild(1) instanceof CqlParser.UidContext) {
+            alias = ctx.getChild(1).getText();
+        }
+        if (ctx.getChildCount() == 3 && "as".equalsIgnoreCase(ctx.getChild(1).getText())) {
+            alias = ctx.getChild(2).getText();
+        }
         if (ctx.getChild(0) instanceof CqlParser.AggregateFunctionCallContext) {
-            return visitAggregateFunctionCall((CqlParser.AggregateFunctionCallContext) ctx.getChild(0));
+            return Column.of(visitAggregateFunctionCall((CqlParser.AggregateFunctionCallContext) ctx.getChild(0)), alias);
         } else if (ctx.getChild(0) instanceof CqlParser.SpecificFunctionCallContext) {
-            return visitSpecificFunctionCall((CqlParser.SpecificFunctionCallContext) ctx.getChild(0));
+
+            return Column.of(visitSpecificFunctionCall((CqlParser.SpecificFunctionCallContext) ctx.getChild(0)), alias);
         }
         return null;
     }

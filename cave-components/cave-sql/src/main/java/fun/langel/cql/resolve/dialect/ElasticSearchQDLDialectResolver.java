@@ -4,13 +4,13 @@ import fun.langel.cql.dialect.Dialect;
 import fun.langel.cql.dialect.ElasticSearchQDL;
 import fun.langel.cql.enums.Order;
 import fun.langel.cql.node.*;
-import fun.langel.cql.node.func.C_Exists;
-import fun.langel.cql.node.func.C_KeyValue;
-import fun.langel.cql.node.func.C_Script;
+import fun.langel.cql.node.func.*;
 import fun.langel.cql.node.operator.*;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.util.ArrayUtil;
 import fun.langel.cql.util.ListUtil;
+import fun.langel.cql.util.RandomUtil;
+import fun.langel.cql.util.StringUtil;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -18,9 +18,17 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.script.Script;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.AggregatorFactories;
+import org.elasticsearch.search.aggregations.metrics.avg.AvgAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.sum.SumAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.valuecount.ValueCountAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -32,6 +40,8 @@ import java.util.stream.Collectors;
  * @since 2022/3/21 20:59
  **/
 public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectResolver<SelectStatement, SearchRequest> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ElasticSearchDialectResolver.class);
 
     @Override
     public Dialect<SearchRequest> resolve(SelectStatement statement) {
@@ -49,26 +59,62 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         if (statement.orderBy() != null) {
             sort(ssb, statement.orderBy());
         }
+        if (statement.columns().stream().anyMatch(v -> ((Column) v).isFunction())) {
+            for (AggregationBuilder aggBuilder : statsAggregation(statement.columns())) {
+                ssb.aggregation(aggBuilder);
+            }
+        }
         List<String> tables = ListUtil.isNullOrEmpty(statement.tables()) ? null : statement.tables().stream().map(Table::getName).map(String::toLowerCase).collect(Collectors.toList());
         SearchRequest sr = new SearchRequest(ListUtil.toStringArray(tables));
         sr.searchType(SearchType.DEFAULT);
         sr.source(ssb);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("ElasticSearch Qdl : {}", sr.source());
+        }
         return new ElasticSearchQDL(sr);
     }
 
-    private String[] sourceFields(List<Node> columns) {
+    private List<AggregationBuilder> statsAggregation(List<Column> funcCols) {
+        if (ListUtil.isNullOrEmpty(funcCols)) {
+            return Collections.emptyList();
+        }
+        List<AggregationBuilder> builders = new LinkedList<>();
+        for (int idx = 0, len = funcCols.size(); idx < len; idx++) {
+            Column col = funcCols.get(idx);
+            if (!col.isFunction()) {
+                continue;
+            }
+            Function func = col.function();
+            if (func instanceof Avg) {
+                AvgAggregationBuilder avg = AggregationBuilders.avg(StringUtil.withDefault(col.name(), "avg_" + idx));
+                avg.field(((Column) func.executable()).name());
+                builders.add(avg);
+            } else if (func instanceof Count) {
+                ValueCountAggregationBuilder count = AggregationBuilders.count(StringUtil.withDefault(col.name(), "count_" + idx));
+                count.field(((Column) func.executable()).name());
+                builders.add(count);
+            } else if (func instanceof Sum) {
+                SumAggregationBuilder sum = AggregationBuilders.sum(StringUtil.withDefault(col.name(), "sum_" + idx));
+                sum.field(((Column) func.executable()).name());
+                builders.add(sum);
+            }
+        }
+        return builders;
+    }
+
+    private String[] sourceFields(List<Column> columns) {
         if (ListUtil.isNullOrEmpty(columns)) {
             return null;
         }
-        List<String> fields = columns.stream()
-                .filter(v -> (v instanceof Column) || (v instanceof C_KeyValue))
-                .map(v -> {
-                    if (v instanceof C_KeyValue) {
-                        return ((Column) ((C_KeyValue) v).executable()).name();
-                    } else {
-                        return ((Column) v).name();
-                    }
-                }).collect(Collectors.toList());
+        List<String> fields = columns.stream().filter(v -> ((v != null) && !v.isFunction())).map(v -> {
+
+            // if (v.function() instanceof C_KeyValue) {
+            //     return ((C_KeyValue)v.function()).executable().
+            // } else {
+            //     return ((Column) v).name();
+            // }
+            return v.name();
+        }).collect(Collectors.toList());
         return ListUtil.isNullOrEmpty(fields) ? null : ArrayUtil.toArray(fields);
     }
 
@@ -110,7 +156,6 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
                 }
             } else {
                 Object value = ((Value) (expr).right()).value();
-
                 final RangeQueryBuilder qb = QueryBuilders.rangeQuery(name);
 
                 if (operator == RelOperator.LESS) {
