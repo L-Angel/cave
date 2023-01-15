@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cave-components</artifactId>
+        <groupId>fun.l-angel</groupId>
+        <version>0.0.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <artifactId>cave-sql</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>com.alibaba</groupId>-->
+        <!--            <artifactId>fastjson</artifactId>-->
+        <!--            <version>1.2.9</version>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <!--                    <includes>-->
+                    <!--                        <include>**/**.ftl</include>-->
+                    <!--                        <include>**/**.jj</include>-->
+                    <!--                        <include>**.fmpp</include>-->
+                    <!--                    </includes>-->
+                </configuration>
+            </plugin>
+            <!--            <plugin>-->
+            <!--                <groupId>org.codehaus.mojo</groupId>-->
+            <!--                <artifactId>javacc-maven-plugin</artifactId>-->
+            <!--                <version>${javacc-plugin.version}</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>javacc</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>javacc</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <sourceDirectory>${project.build.directory}/generated-sources/fmpp</sourceDirectory>-->
+            <!--                            <includes>-->
+            <!--                                <include>**/Parser.jj</include>-->
+            <!--                            </includes>-->
+            <!--                            <lookAhead>2</lookAhead>-->
+            <!--                            <isStatic>false</isStatic>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                    <execution>-->
+            <!--                        <id>javacc-test</id>-->
+            <!--                        <phase>generate-test-sources</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>javacc</goal>-->
+            <!--                        </goals>-->
+            <!--                        <configuration>-->
+            <!--                            <sourceDirectory>${project.build.directory}/generated-test-sources/fmpp</sourceDirectory>-->
+            <!--                            <outputDirectory>${project.build.directory}/generated-test-sources/javacc</outputDirectory>-->
+            <!--                            <includes>-->
+            <!--                                <include>**/Parser.jj</include>-->
+            <!--                            </includes>-->
+            <!--                            <lookAhead>2</lookAhead>-->
+            <!--                            <isStatic>false</isStatic>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.drill.tools</groupId>-->
+            <!--                <artifactId>drill-fmpp-maven-plugin</artifactId>-->
+            <!--                <version>1.17.0</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <configuration>-->
+            <!--                            <config>src/main/codegen/config.fmpp</config>-->
+            <!--                            <output>${project.build.directory}/generated-sources/fmpp</output>-->
+            <!--                            <templates>src/main/codegen/templates</templates>-->
+            <!--                        </configuration>-->
+            <!--                        <id>generate-fmpp-sources</id>-->
+            <!--                        <phase>validate</phase>-->
+            <!--                        <goals>-->
+            <!--                            <goal>generate</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/codegen</directory>
+                <targetPath>codegen</targetPath>
+            </resource>
+        </resources>
+    </build>
+</project>
