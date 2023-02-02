@@ -52,10 +52,11 @@ public class ElasticSearchDataSource implements DataSource {
         props.setProperty(Const.CAVE_ELASTICSEARCH_HOST, host);
         String username = StringUtil.isEmpty(Props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME)) ?
                 Props.getProperty(Const.ES_USERNAME) : Props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME);
-        props.setProperty(Const.CAVE_ELASTICSEARCH_USERNAME, username);
+
+        props.setProperty(Const.CAVE_ELASTICSEARCH_USERNAME, username == null ? "" : username);
         String password = StringUtil.isEmpty(Props.getProperty(Const.CAVE_ELASTICSEARCH_PASSWORD)) ?
                 Props.getProperty(Const.ES_PASSWORD) : Props.getProperty(Const.CAVE_ELASTICSEARCH_PASSWORD);
-        props.setProperty(Const.CAVE_ELASTICSEARCH_PASSWORD, password);
+        props.setProperty(Const.CAVE_ELASTICSEARCH_PASSWORD, password == null ? "" : password);
         if (this.connection == null) {
             synchronized (ElasticSearchDataSource.class) {
                 if (this.connection == null) {

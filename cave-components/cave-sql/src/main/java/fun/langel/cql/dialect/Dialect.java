@@ -11,4 +11,5 @@ public interface Dialect<D> {
     Language type();
 
     D content();
+
 }

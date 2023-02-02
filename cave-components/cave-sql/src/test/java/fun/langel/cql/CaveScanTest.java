@@ -4,6 +4,7 @@ import fun.langel.cql.annotation.CaveScan;
 import fun.langel.cql.cave.CaveDemo;
 import fun.langel.cql.cave.Model;
 import fun.langel.cql.cave.Model2;
+import fun.langel.cql.statement.SelectStatement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,5 +55,12 @@ public class CaveScanTest {
         Assert.assertTrue(count > -2);
     }
 
+
+    @Test
+    public void test_select_es_parse() {
+        final String sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title='快递箱2包装' and a_status=null and a_sub_type=null";
+        int c = caveDemo.demoQuery();
+        System.out.println(c);
+    }
 
 }

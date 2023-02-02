@@ -64,7 +64,7 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         if (statement.orderBy() != null) {
             sort(ssb, statement.orderBy());
         }
-        if (statement.columns().stream().anyMatch(v -> ((Column) v).isFunction())) {
+        if (statement.columns().stream().anyMatch(Column::isFunction)) {
             for (AggregationBuilder aggBuilder : statsAggregation(statement.columns())) {
                 ssb.aggregation(aggBuilder);
             }
@@ -149,55 +149,8 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             builders.addAll(resolveQueryCondition((Expr) expr.left()));
             builders.addAll(resolveQueryCondition((Expr) expr.right()));
             return builders;
-        } else if (operator instanceof RelOperator) {
-            String name = ((Column) expr.left()).name();
-            if (operator == RelOperator.IN || operator == RelOperator.NOT_IN) {
-                Range range = (Range) expr.right();
-                if (operator == RelOperator.IN) {
-                    return Collections.singletonList(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList())));
-                } else if (operator == RelOperator.NOT_IN) {
-                    BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-                    bqb.mustNot(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList())));
-                    return Collections.singletonList(bqb);
-                }
-            } else {
-                // Object value = ((Value) (expr).right()).value();
-                Value cValue = (Value) expr.right();
-                if (cValue.isNull()) {
-                    return Collections.emptyList();
-                }
-                final RangeQueryBuilder qb = QueryBuilders.rangeQuery(name);
-                if (operator == RelOperator.LESS) {
-                    qb.lt(cValue.value());
-                    return Collections.singletonList(qb);
-                } else if (operator == RelOperator.LESS_OR_EQUALS) {
-                    qb.lte(cValue.value());
-                    return Collections.singletonList(qb);
-                } else if (operator == RelOperator.GREATER) {
-                    qb.gt(cValue.value());
-                    return Collections.singletonList(qb);
-                } else if (operator == RelOperator.GREATER_OR_EQUALS) {
-                    qb.gte(cValue.value());
-                    return Collections.singletonList(qb);
-                }
-                if (operator == RelOperator.EQUAL) {
-                    return Collections.singletonList(QueryBuilders.termQuery(name, cValue.value()));
-                    // return Collections.singletonList(QueryBuilders.matchPhraseQuery(name + ".keyword", value));
-                } else if (operator == RelOperator.NOT_EQUAL) {
-                    BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-                    bqb.mustNot(QueryBuilders.termQuery(name, cValue.value()));
-                    // bqb.mustNot(QueryBuilders.matchPhraseQuery(name + ".keyword", value));
-                    return Collections.singletonList(bqb);
-                }
-
-                if (operator == RelOperator.LIKE) {
-                    return Collections.singletonList(QueryBuilders.matchPhraseQuery(name, cValue.value()));
-                } else if (operator == RelOperator.NOT_LIKE) {
-                    BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-                    bqb.mustNot(QueryBuilders.matchPhraseQuery(name, cValue.value()));
-                    return Collections.singletonList(bqb);
-                }
-            }
+        } else if (operator instanceof RelOperator) { // 关系运算符
+            return resolveRelOperator((RelOperator) operator, expr);
         } else if (operator instanceof BetweenOperator) {
             final RangeQueryBuilder rqb = QueryBuilders.rangeQuery(((Column) expr.left()).name());
             rqb.from(expr.begin().value());
@@ -212,9 +165,43 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
                 return Collections.singletonList(QueryBuilders.scriptQuery(new Script(c_script.executable().toString())));
             }
         }
-
         return Collections.emptyList();
     }
 
 
+    private List<QueryBuilder> resolveRelOperator(RelOperator operator, Expr expr) {
+        String name = ((Column) expr.left()).name();
+        if (operator == RelOperator.IN || operator == RelOperator.NOT_IN) {
+            Range range = (Range) expr.right();
+            if (operator == RelOperator.IN) {
+                return Collections.singletonList(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList())));
+            } else if (operator == RelOperator.NOT_IN) {
+                return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList()))));
+            }
+        } else {
+            Value cValue = (Value) expr.right();
+            if (cValue.isNull()) {
+                return Collections.emptyList();
+            }
+            switch (operator) {
+                case LESS:
+                    return Collections.singletonList(QueryBuilders.rangeQuery(name).lt(cValue.value()));
+                case LESS_OR_EQUALS:
+                    return Collections.singletonList(QueryBuilders.rangeQuery(name).lte(cValue.value()));
+                case GREATER:
+                    return Collections.singletonList(QueryBuilders.rangeQuery(name).gt(cValue.value()));
+                case GREATER_OR_EQUALS:
+                    return Collections.singletonList(QueryBuilders.rangeQuery(name).gte(cValue.value()));
+                case EQUAL:
+                    return Collections.singletonList(QueryBuilders.termQuery(name + ".keyword", cValue.value()));
+                case NOT_EQUAL:
+                    return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(name + ".keyword", cValue.value())));
+                case LIKE:
+                    return Collections.singletonList(QueryBuilders.matchPhraseQuery(name, cValue.value()));
+                case NOT_LIKE:
+                    return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.matchPhraseQuery(name, cValue.value())));
+            }
+        }
+        return Collections.emptyList();
+    }
 }
