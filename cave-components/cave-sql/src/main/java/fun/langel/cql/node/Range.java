@@ -1,5 +1,7 @@
 package fun.langel.cql.node;
 
+import fun.langel.cql.util.ListUtil;
+
 import java.util.List;
 
 /**
@@ -27,12 +29,20 @@ public class Range implements Terminal, Node, Expr {
         this.type = Type.BOUNDARY;
     }
 
+
     public static Range of(final List<Value> values) {
         return new Range(values);
     }
 
     public static Range of(final Value begin, final Value end) {
         return new Range(begin, end);
+    }
+
+    public Value.Type valueType() {
+        if (ListUtil.isNullOrEmpty(this.values())) {
+            return Value.Type.STRING;
+        }
+        return this.values().get(0).type();
     }
 
     public List<Value> values() {

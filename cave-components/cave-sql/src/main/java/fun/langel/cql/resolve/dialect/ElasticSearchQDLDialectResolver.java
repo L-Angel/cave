@@ -175,8 +175,14 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         if (operator == RelOperator.IN || operator == RelOperator.NOT_IN) {
             Range range = (Range) expr.right();
             if (operator == RelOperator.IN) {
+                if (range.valueType() == Value.Type.NUMBER) {
+                    return Collections.singletonList(QueryBuilders.termsQuery(name, range.values().stream().map(Value::value).collect(Collectors.toList())));
+                }
                 return Collections.singletonList(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList())));
             } else if (operator == RelOperator.NOT_IN) {
+                if (range.valueType() == Value.Type.NUMBER) {
+                    return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery(name, range.values().stream().map(Value::value).collect(Collectors.toList()))));
+                }
                 return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery(name + ".keyword", range.values().stream().map(Value::value).collect(Collectors.toList()))));
             }
         } else {
