@@ -6,6 +6,7 @@ import fun.langel.cql.enums.Order;
 import fun.langel.cql.node.*;
 import fun.langel.cql.node.func.*;
 import fun.langel.cql.node.operator.*;
+import fun.langel.cql.rv.Number;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.util.ArrayUtil;
 import fun.langel.cql.util.ListUtil;
@@ -193,8 +194,14 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
                 case GREATER_OR_EQUALS:
                     return Collections.singletonList(QueryBuilders.rangeQuery(name).gte(cValue.value()));
                 case EQUAL:
+                    if (cValue.type() == Value.Type.NUMBER) {
+                        return Collections.singletonList(QueryBuilders.termQuery(name, cValue.value()));
+                    }
                     return Collections.singletonList(QueryBuilders.termQuery(name + ".keyword", cValue.value()));
                 case NOT_EQUAL:
+                    if (cValue.type() == Value.Type.NUMBER) {
+                        return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(name, cValue.value())));
+                    }
                     return Collections.singletonList(QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(name + ".keyword", cValue.value())));
                 case LIKE:
                     return Collections.singletonList(QueryBuilders.matchPhraseQuery(name, cValue.value()));
