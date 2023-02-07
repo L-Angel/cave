@@ -4,7 +4,11 @@ import fun.langel.cql.annotation.CaveScan;
 import fun.langel.cql.cave.CaveDemo;
 import fun.langel.cql.cave.Model;
 import fun.langel.cql.cave.Model2;
+import fun.langel.cql.dialect.Dialect;
+import fun.langel.cql.resolve.DialectResolver;
+import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
 import fun.langel.cql.statement.SelectStatement;
+import org.elasticsearch.action.search.SearchRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +65,16 @@ public class CaveScanTest {
         final String sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title='快递箱2包装' and a_status=null and a_sub_type=null";
         int c = caveDemo.demoQuery();
         System.out.println(c);
+    }
+
+    @Test
+    public void test_select_parse_es_dialect() {
+        final DialectResolver<SelectStatement, SearchRequest> dialectResolver = new ElasticSearchQDLDialectResolver();
+
+        final String sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title like null and a_status=null and a_sub_type=null";
+        SelectStatement select = Cql.parseSelectStatement(sql);
+        Dialect<SearchRequest> dialect = dialectResolver.resolve(select);
+        System.out.println(dialect.content().source());
     }
 
 }

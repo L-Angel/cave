@@ -39,7 +39,7 @@ public class Value implements Terminal, Node, Expr {
     }
 
     public static Value of(final String value) {
-        return new Value(value, false, false);
+        return new Value(value, "null".equalsIgnoreCase(value), !"null".equalsIgnoreCase(value));
     }
 
     public boolean isNull() {
