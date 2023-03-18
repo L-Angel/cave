@@ -29,7 +29,7 @@ public class ParameterResolver {
         int pos = 0;
         while (matcher.find()) {
             String g = matcher.group();
-            parameters.add(new Parameter(g.substring(2, g.length() - 1), null, pos));
+            parameters.add(new Parameter(g.substring(2, g.length() - 1), null, pos, null));
             pos += 1;
         }
         String parameterized = matcher.replaceAll("?");
@@ -52,17 +52,22 @@ public class ParameterResolver {
             return pair;
         }
         for (Parameter p : pair.right()) {
-            p.setValue(matchValue(p.getName(), args));
+            Arg arg = matchArg(p.getName(), args);
+            if (arg == null) {
+                continue;
+            }
+            p.setValue(arg.value());
+            p.setKlass(arg.klass());
         }
         return pair;
     }
 
-    private Object matchValue(String name, Arg[] args) {
+    private Arg matchArg(String name, Arg[] args) {
         for (int idx = 0, len = args.length; idx < len; idx++) {
             Arg arg = args[idx];
             final String n = !StringUtil.isEmpty(arg.alias()) ? arg.alias() : arg.name();
             if (n.equalsIgnoreCase(name)) {
-                return arg.value();
+                return arg;
             }
         }
         return null;

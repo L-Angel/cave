@@ -12,10 +12,15 @@ public class Arg {
 
     private final Object value;
 
-    public Arg(final String name, final String alias, final Object value) {
+    private final Class<?> klass;
+
+    public Arg(final String name, final String alias,
+               final Object value,
+               final Class<?> klass) {
         this.name = name;
         this.alias = alias;
         this.value = value;
+        this.klass = klass;
     }
 
 
@@ -29,5 +34,9 @@ public class Arg {
 
     public Object value() {
         return this.value;
+    }
+
+    public Class<?> klass() {
+        return this.klass;
     }
 }

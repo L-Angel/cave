@@ -1,6 +1,7 @@
 package fun.langel.cql;
 
 import fun.langel.cql.annotation.CaveScan;
+import fun.langel.cql.annotation.Select;
 import fun.langel.cql.cave.CaveDemo;
 import fun.langel.cql.cave.Model;
 import fun.langel.cql.cave.Model2;
@@ -81,6 +82,7 @@ public class CaveScanTest {
 
     @Test
     public void test_range_query() {
+
         final List<Integer> a = new LinkedList<Integer>();
         a.add(1);
         a.add(3);
@@ -91,6 +93,22 @@ public class CaveScanTest {
         c.add("b");
         c.add("d");
         caveDemo.rangeQuery(c, a);
+    }
+
+    @Test
+    public void test_range_query_with_null() {
+        caveDemo.rangeQuery(null, null);
+        final List<String> c = new LinkedList<>();
+
+        caveDemo.rangeQuery(c, null);
+
+    }
+
+    @Test
+    public void test_parse() {
+        final String sql = "select count('fieldC') from demo_index where fieldc in (null) and fielda in (null)";
+        SelectStatement statement = Cql.parseSelectStatement(sql);
+        Assert.assertNotNull(statement);
     }
 
 }

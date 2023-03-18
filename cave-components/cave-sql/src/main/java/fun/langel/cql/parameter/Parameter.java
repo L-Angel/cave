@@ -12,17 +12,21 @@ public class Parameter {
 
     private final int pos;
 
+    private Class<?> klass;
+
     public Parameter(final String name,
                      final Object value,
-                     final int pos) {
+                     final int pos,
+                     final Class<?> klass) {
         this.name = name;
         this.value = value;
         this.pos = pos;
+        this.klass = klass;
     }
 
     public Parameter(final String name,
                      final Object value) {
-        this(name, value, -1);
+        this(name, value, -1, null);
     }
 
     public int pos() {
@@ -39,5 +43,13 @@ public class Parameter {
 
     public Object getValue() {
         return value;
+    }
+
+    public Class<?> getKlass() {
+        return this.klass;
+    }
+
+    public void setKlass(final Class<?> klass) {
+        this.klass = klass;
     }
 }

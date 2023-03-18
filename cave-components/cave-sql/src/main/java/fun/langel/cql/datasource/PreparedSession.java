@@ -7,10 +7,7 @@ import fun.langel.cql.parameter.ParameterResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.util.Pair;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -56,24 +53,29 @@ public abstract class PreparedSession implements Session {
         for (Parameter p : parameters) {
             Object sv = p.getValue();
             String ev = null;
-            if (sv == null) {
+            if (List.class.isAssignableFrom(p.getKlass())
+                    || Set.class.isAssignableFrom(p.getKlass())) {
+                if (sv == null || ((Collection) sv).isEmpty()) {
+                    ev = "(null)";
+                } else {
+                    List<String> c = new LinkedList<>();
+                    for (int idx = 0, len = ((List<?>) sv).size(); idx < len; idx++) {
+                        Object v = ((List<?>) sv).get(idx);
+                        if (v == null) {
+                            continue;
+                        }
+                        if (v instanceof Number) {
+                            c.add(v.toString());
+                        } else {
+                            c.add("'" + v.toString() + "'");
+                        }
+                    }
+                    ev = "(" + String.join(",", c) + ")";
+                }
+            } else if (sv == null) {
                 ev = "null";
             } else if (sv instanceof Number) {
                 ev = String.valueOf(sv);
-            } else if (sv instanceof List) {
-                List<String> c = new LinkedList<>();
-                for (int idx = 0, len = ((List<?>) sv).size(); idx < len; idx++) {
-                    Object v = ((List<?>) sv).get(idx);
-                    if (v == null) {
-                        continue;
-                    }
-                    if (v instanceof Number) {
-                        c.add(v.toString());
-                    } else {
-                        c.add("'" + v.toString() + "'");
-                    }
-                }
-                ev = "(" + String.join(",", c) + ")";
             } else {
                 ev = "'" + String.valueOf(sv) + "'";
             }

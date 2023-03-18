@@ -92,7 +92,7 @@ public class CaveMethod {
             if (param != null) {
                 alias = param.name();
             }
-            args[idx] = new Arg(parameter.getName(), alias, values[idx]);
+            args[idx] = new Arg(parameter.getName(), alias, values[idx], parameter.getType());
         }
         return args;
     }

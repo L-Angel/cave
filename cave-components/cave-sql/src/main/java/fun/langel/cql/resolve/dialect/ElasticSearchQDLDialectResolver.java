@@ -174,6 +174,9 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
         String name = ((Column) expr.left()).name();
         if (operator == RelOperator.IN || operator == RelOperator.NOT_IN) {
             Range range = (Range) expr.right();
+            if (range.values().size() == 1 && range.values().get(0).isNull()) {
+                return Collections.emptyList();
+            }
             if (operator == RelOperator.IN) {
                 if (range.valueType() == Value.Type.NUMBER) {
                     return Collections.singletonList(QueryBuilders.termsQuery(name, range.values().stream().map(Value::value).collect(Collectors.toList())));
