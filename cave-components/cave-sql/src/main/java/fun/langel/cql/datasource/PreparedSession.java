@@ -60,6 +60,20 @@ public abstract class PreparedSession implements Session {
                 ev = "null";
             } else if (sv instanceof Number) {
                 ev = String.valueOf(sv);
+            } else if (sv instanceof List) {
+                List<String> c = new LinkedList<>();
+                for (int idx = 0, len = ((List<?>) sv).size(); idx < len; idx++) {
+                    Object v = ((List<?>) sv).get(idx);
+                    if (v == null) {
+                        continue;
+                    }
+                    if (v instanceof Number) {
+                        c.add(v.toString());
+                    } else {
+                        c.add("'" + v.toString() + "'");
+                    }
+                }
+                ev = "(" + String.join(",", c) + ")";
             } else {
                 ev = "'" + String.valueOf(sv) + "'";
             }

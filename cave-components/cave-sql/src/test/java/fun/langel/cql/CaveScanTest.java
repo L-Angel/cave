@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -71,10 +72,25 @@ public class CaveScanTest {
     public void test_select_parse_es_dialect() {
         final DialectResolver<SelectStatement, SearchRequest> dialectResolver = new ElasticSearchQDLDialectResolver();
 
-        final String sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title like null and a_status=null and a_sub_type=null";
+        final String sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title like null and a_status=null and a_sub_type=null" +
+                " and status in (1,2,3)";
         SelectStatement select = Cql.parseSelectStatement(sql);
         Dialect<SearchRequest> dialect = dialectResolver.resolve(select);
         System.out.println(dialect.content().source());
+    }
+
+    @Test
+    public void test_range_query() {
+        final List<Integer> a = new LinkedList<Integer>();
+        a.add(1);
+        a.add(3);
+        a.add(4);
+        a.add(5);
+        final List<String> c = new LinkedList<>();
+        c.add("a");
+        c.add("b");
+        c.add("d");
+        caveDemo.rangeQuery(c, a);
     }
 
 }
