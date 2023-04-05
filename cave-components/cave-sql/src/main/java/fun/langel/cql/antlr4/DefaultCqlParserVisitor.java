@@ -4,11 +4,14 @@ import fun.langel.cql.antlr4.CqlParser.SqlStatementContext;
 import fun.langel.cql.enums.Order;
 import fun.langel.cql.exception.SqlException;
 import fun.langel.cql.exception.UnsupportCqlFunctionException;
+import fun.langel.cql.extension.CqlParseExtension;
+import fun.langel.cql.extension.DefaultCqlParseExtension;
 import fun.langel.cql.node.*;
 import fun.langel.cql.node.func.*;
 import fun.langel.cql.node.operator.LogicalOperator;
 import fun.langel.cql.node.operator.Operator;
 import fun.langel.cql.node.operator.RelOperator;
+import fun.langel.cql.spi.Loader;
 import fun.langel.cql.statement.EmptyStatement;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.statement.Statement;
@@ -29,6 +32,14 @@ import java.util.Objects;
  * @since 2022/7/18 17:20
  **/
 public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implements CqlParserVisitor<Node> {
+
+    private final CqlParseExtension cqlParseExtension;
+
+    public DefaultCqlParserVisitor() {
+        CqlParseExtension extension = Loader.loadSingle(CqlParseExtension.class);
+        this.cqlParseExtension = extension == null ? new DefaultCqlParseExtension() : extension;
+    }
+
     @Override
     public Statements visit(ParseTree tree) {
         return visitRoot((CqlParser.RootContext) tree);
@@ -105,7 +116,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
                         }
                     }
                 }
-                statement.setColumns(columns);
+                statement.setColumns(this.cqlParseExtension.afterSelectElements(columns));
             } else if (pt instanceof CqlParser.FromClauseContext) {
                 statement.setFrom(visitFromClause((CqlParser.FromClauseContext) pt));
             } else if (pt instanceof CqlParser.OrderByClauseContext) {
@@ -221,7 +232,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         CqlParser.ExpressionContext wExpr = ctx.whereExpr;
         CqlParser.TableSourcesContext sources = ctx.tableSources();
         Expr where = visitExpr(wExpr);
-
+        where = this.cqlParseExtension.afterWhere(where);
         List<Table> tables = new LinkedList<>();
         for (int idx = 0, len = sources.getChildCount(); idx < len; idx++) {
             ParseTree pt = sources.getChild(idx);
