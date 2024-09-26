@@ -10,9 +10,20 @@ import fun.langel.cql.rv.ReturnValue;
 public interface Session {
     Language lang();
 
-    ReturnValue<?> executeQuery(String sql);
+    default ReturnValue<?> executeQuery(String sql) {
+        throw new UnsupportedOperationException();
+    }
 
-    Number executeUpdate(String sql);
+    default Number executeUpdate(String sql) {
+        throw new UnsupportedOperationException();
+    }
 
-    Number executeDelete(String sql);
+    default Number executeDelete(String sql) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    default Number executeInsert(String sql) {
+        throw new UnsupportedOperationException();
+    }
 }

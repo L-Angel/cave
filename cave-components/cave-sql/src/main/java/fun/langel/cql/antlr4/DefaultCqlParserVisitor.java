@@ -22,7 +22,6 @@ import fun.langel.cql.util.IntegerUtil;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.security.acl.Group;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -251,7 +250,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         ParseTree p = ctx.getChild(0);
         if (p instanceof CqlParser.AtomTableItemContext) {
             CqlParser.AtomTableItemContext t = (CqlParser.AtomTableItemContext) p;
-            return new Table(t.getChild(0).getText(), t.alias == null ? null : t.alias.getText());
+            return Table.of(t.getChild(0).getText(), t.alias == null ? null : t.alias.getText());
         }
         return null;
     }
@@ -331,7 +330,8 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
 
     @Override
     public Expr visitLikePredicate(CqlParser.LikePredicateContext ctx) {
-        return new ExprImpl(Column.of(ctx.predicate(0).getText()), ctx.NOT() == null ? RelOperator.LIKE : RelOperator.NOT_LIKE, Value.of(ctx.getChild(ctx.getChildCount() - 1).getText()));
+        return new ExprImpl(Column.of(ctx.predicate(0).getText()), ctx.NOT() == null ? RelOperator.LIKE : RelOperator.NOT_LIKE,
+                Value.of(ctx.getChild(ctx.getChildCount() - 1).getText()));
     }
 
     @Override

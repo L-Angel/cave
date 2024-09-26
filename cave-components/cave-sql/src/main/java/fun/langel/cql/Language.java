@@ -7,6 +7,7 @@ package fun.langel.cql;
 public enum Language {
     MYSQL,
 
+    MONGO,
     // QDL_ELASTIC_SEARCH,
     ELASTIC_SEARCH;
 }

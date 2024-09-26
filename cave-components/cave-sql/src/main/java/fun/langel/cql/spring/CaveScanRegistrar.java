@@ -1,15 +1,11 @@
 package fun.langel.cql.spring;
 
 
-import fun.langel.cql.Cave;
 import fun.langel.cql.annotation.CaveScan;
 import fun.langel.cql.datasource.DataSource;
 import fun.langel.cql.datasource.DataSourceHolder;
 import fun.langel.cql.datasource.support.ElasticSearchDataSource;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.Aware;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.*;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;

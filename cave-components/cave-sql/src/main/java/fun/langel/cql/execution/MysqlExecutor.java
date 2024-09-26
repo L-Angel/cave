@@ -4,6 +4,8 @@ import fun.langel.cql.invoke.ExecutionContext;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Properties;
 
 /**

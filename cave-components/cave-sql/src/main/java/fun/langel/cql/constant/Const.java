@@ -6,6 +6,20 @@ package fun.langel.cql.constant;
  **/
 public interface Const {
 
+    /**
+     * elasticsearch
+     * mongodb
+     */
+    String CAVE_STORAGE_TYPE = "cave.storage.type";
+
+    String CAVE_MONGODB_HOST = "cave.mongodb.host";
+
+    String CAVE_MONGODB_DBNAME = "cave.mongodb.dbname";
+
+    String CAVE_MONGODB_USERNAME = "cave.mongodb.username";
+
+    String CAVE_MONGODB_PASSWORD = "cave.mongodb.password";
+
     String CAVE_ELASTICSEARCH_HOST = "cave.elasticsearch.hosts";
 
     String ES_HOST = "es.host";

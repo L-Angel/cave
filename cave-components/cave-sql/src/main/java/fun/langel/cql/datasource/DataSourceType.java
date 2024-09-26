@@ -10,6 +10,7 @@ public enum DataSourceType {
 
     ELASTIC_SEARCH,
 
+    MONGO,
     /**
      * 自动降级使用
      */

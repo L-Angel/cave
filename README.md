@@ -47,6 +47,7 @@ public class App {
 ```
 3. 编写签名类
 ```java
+
 @Cave
 public interface CaveDemo {
 
@@ -54,8 +55,8 @@ public interface CaveDemo {
     String query(@Param(name = "param1") String param1);
 
     @Select(sql = "select field1,field2 from demo_index where field1 = #{param1}",
-            direct = "defaultEs"
-            , returnType = Model.class)
+            direct = "defaultEs",
+            returnType = Model.class)
     List<Model> queryList(@Param(name = "param1") String param1);
 }
 

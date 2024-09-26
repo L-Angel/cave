@@ -10,9 +10,13 @@ public class Table implements Node {
 
     private final String alias;
 
-    public Table(String name, String alias) {
+    private Table(String name, String alias) {
         this.name = name;
         this.alias = alias;
+    }
+
+    public static Table of(final String name, final String alias) {
+        return new Table(name, alias);
     }
 
     public String getName() {
