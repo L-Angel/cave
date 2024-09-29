@@ -102,15 +102,5 @@ public class ElasticSearchRvResolver implements RvResolver<SearchResponse> {
         return pairs;
     }
 
-    private Row resolve(Map<String, Object> r) {
-        Row row = new Row();
-        for (Map.Entry<String, Object> entry : r.entrySet()) {
-            final String key = entry.getKey();
-            Object value = entry.getValue();
-            row.put(key, resolveObj(value));
-        }
-        return row;
-    }
-
 
 }

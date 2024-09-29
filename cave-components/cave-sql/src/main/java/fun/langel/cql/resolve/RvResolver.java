@@ -4,8 +4,10 @@ import fun.langel.cql.node.Column;
 import fun.langel.cql.node.Function;
 import fun.langel.cql.rv.Number;
 import fun.langel.cql.rv.ReturnValue;
+import fun.langel.cql.rv.Row;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -34,5 +36,15 @@ public interface RvResolver<F> {
             return Number.of((Double) v);
         }
         return fun.langel.cql.rv.String.of(String.valueOf(v));
+    }
+
+    default Row resolve(Map<String, Object> r) {
+        Row row = new Row();
+        for (Map.Entry<String, Object> entry : r.entrySet()) {
+            final String key = entry.getKey();
+            Object value = entry.getValue();
+            row.put(key, resolveObj(value));
+        }
+        return row;
     }
 }

@@ -36,6 +36,8 @@ public class SelectInvoker extends AbstractInvoker {
         ReturnValue<?> rv = null;
         if (lang == Language.ELASTIC_SEARCH) {
             rv = session.executeQuery(this.sql());
+        } else if (lang == Language.MONGO) {
+            rv = session.executeQuery(this.sql());
         }
 
         Result result = new Result();

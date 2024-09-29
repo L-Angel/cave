@@ -10,6 +10,9 @@ import java.io.Serializable;
  **/
 public class Model implements Serializable {
 
+    @CField(alias = "field")
+    private String field;
+
     @CField(alias = "field1")
     private String field1;
 
@@ -21,6 +24,15 @@ public class Model implements Serializable {
 
     @CField(alias = "field4")
     private int field4;
+
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
 
     public String getField1() {
         return field1;

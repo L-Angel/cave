@@ -45,9 +45,16 @@ public interface CaveDemo {
     @Select(sql = "select count('fieldC') from demo_index where fieldC=3.5")
     int demoCount();
 
-    @Select(sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title='快递箱2包装' and a_status=null and a_sub_type=null")
+    @Select(sql = "select count(1) from es_activity where a_priority = null and csi_sku_code=null and a_type='2' and a_name=null and csi_title='快递箱2包装' and a_status=null and " +
+            "a_sub_type=null")
     int demoQuery();
 
     @Select(sql = "select count('fieldC') from demo_index where fieldc in ${paramc} and fielda in ${parama}")
     int rangeQuery(@Param(name = "paramc") List<String> c, @Param(name = "parama") List<Integer> a);
+
+    @Select(sql = "select field1 from table1")
+    List<Model> queryDemoMongo();
+
+    @Select(sql = "select field from table1 where field= ${aaa}")
+    List<Model> queryDemoMongo2(@Param(name = "aaa") String field);
 }

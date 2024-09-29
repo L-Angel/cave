@@ -7,7 +7,7 @@
     <groupId>fun.l-angel</groupId>
     <artifactId>cave</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.1.0</version>
     <modules>
         <module>cave-components</module>
     </modules>
@@ -173,7 +173,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <!-- verify gpg, generate asc files. -->

@@ -1,9 +1,11 @@
 package fun.langel.cql.datasource.support;
 
+import com.mongodb.Block;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.client.*;
+import com.mongodb.connection.ServerSettings;
 import fun.langel.cql.Cql;
 import fun.langel.cql.Language;
 import fun.langel.cql.constant.Const;
@@ -20,6 +22,7 @@ import fun.langel.cql.resolve.rv.MongoRvResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.util.Props;
+import fun.langel.cql.util.StringUtil;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.conversions.Bson;
@@ -53,13 +56,14 @@ public class MongoDataSource implements DataSource {
         String username = Props.getProperty(Const.CAVE_MONGODB_USERNAME);
         String password = Props.getProperty(Const.CAVE_MONGODB_PASSWORD);
 
-        MongoClientSettings settings = MongoClientSettings.builder()
-                .applyConnectionString(new ConnectionString(hosts))
-                .credential(MongoCredential.createCredential(username, dbName, password.toCharArray()))
-                .build();
+        MongoClientSettings.Builder builder = MongoClientSettings.builder()
+                .applyConnectionString(new ConnectionString(hosts));
+        if (!StringUtil.isEmpty(username) && !StringUtil.isEmpty(password)) {
+            builder.credential(MongoCredential.createCredential(username, dbName, password.toCharArray()));
+        }
 
 
-        MongoClient client = MongoClients.create(settings);
+        MongoClient client = MongoClients.create(builder.build());
         MongoDatabase mongoDatabase = client.getDatabase(dbName);
         if (this.connection == null) {
             synchronized (MongoDataSource.class) {
@@ -122,12 +126,14 @@ class MongoSession extends PreparedSession {
         List<Column> columns = dialect.columns();
         List<Bson> pipline = new LinkedList<>();
 
-        if (columns.size() > 0 && !"*".equalsIgnoreCase(columns.get(0).name())) {
+        if (columns.isEmpty() || (columns.size() > 0 && "*".equalsIgnoreCase(columns.get(0).name()))) {
             // ignore
         } else {
             pipline.add(project(columnsBson(columns)));
         }
-        pipline.add(match(dialect.content()));
+        if (dialect.content() != null) {
+            pipline.add(match(dialect.content()));
+        }
         Limit limit = dialect.limit();
         if (limit != null) {
             if (limit.offset() > 0) {
@@ -146,10 +152,10 @@ class MongoSession extends PreparedSession {
             // todo
         }
 
-        MongoCursor<Bson> cursor = collection.aggregate(pipline).iterator();
+        MongoCursor cursor = collection.aggregate(pipline).iterator();
         List<Bson> array = new LinkedList<>();
         while (cursor.hasNext()) {
-            Bson bson = cursor.next();
+            Bson bson = (Bson) cursor.next();
             array.add(bson);
         }
         return this.rvResolver.resolve(array, select.columns());

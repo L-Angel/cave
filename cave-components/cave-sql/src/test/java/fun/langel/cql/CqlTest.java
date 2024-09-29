@@ -1,6 +1,8 @@
 package fun.langel.cql;
 
 import fun.langel.cql.dialect.Dialect;
+import fun.langel.cql.statement.Statements;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -22,7 +24,8 @@ public class CqlTest {
 
     @Test
     public void testParse_testCondition1() throws IOException {
-        final String sql = "select field1 as f1 from table1 as ta,table2 t2 where f1='b' and f2 is not null and f3 <> 'c' and field4 between 1 and 2 and field5  in (6,7)  and field6 not in (10,11) and field7 like '%abc%' and field8 = ${param1} order by f1 desc ,f2 asc limit 0,100";
+        final String sql = "select field1 as f1 from table1 as ta,table2 t2 where f1='b' and f2 is not null and f3 <> 'c' and field4 between 1 and 2 and field5  in (6,7)  and " +
+                "field6 not in (10,11) and field7 like '%abc%' and field8 = ${param1} order by f1 desc ,f2 asc limit 0,100";
         Cql.parse(sql, Language.ELASTIC_SEARCH);
     }
 
@@ -41,7 +44,13 @@ public class CqlTest {
         System.out.println(dialect);
     }
 
+    @Test
+    public void test_no_where() {
+        final String sql = "select field1 from table1";
+        Statements statements = Cql.parse(sql);
+        Assert.assertTrue(statements != null && !statements.statements().isEmpty());
 
+    }
 
 
     public static class Model1 {

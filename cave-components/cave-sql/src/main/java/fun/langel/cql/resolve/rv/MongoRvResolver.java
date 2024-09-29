@@ -3,8 +3,10 @@ package fun.langel.cql.resolve.rv;
 import fun.langel.cql.node.Column;
 import fun.langel.cql.resolve.RvResolver;
 import fun.langel.cql.rv.ReturnValue;
+import fun.langel.cql.rv.Row;
 import fun.langel.cql.rv.Rows;
 import org.bson.BsonDocument;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.List;
@@ -20,7 +22,8 @@ public class MongoRvResolver implements RvResolver<List<Bson>> {
         if (from == null || from.isEmpty()) {
             return rows;
         }
-        for(Bson bson : from) {
+        for (Bson bson : from) {
+            rows.add(resolve(((Document) bson)));
         }
         return rows;
     }
