@@ -91,6 +91,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         return new EmptyStatement();
     }
 
+
     @Override
     public SelectStatement visitQuerySpecification(CqlParser.QuerySpecificationContext ctx) {
 
@@ -98,7 +99,7 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         for (int idx = 0, len = ctx.getChildCount(); idx < len; idx++) {
             ParseTree pt = ctx.getChild(idx);
             if (pt instanceof TerminalNode) {
-                System.out.println(pt.getText());
+                // System.out.println(pt.getText());
             } else if (pt instanceof CqlParser.SelectElementsContext) {
                 final List<Column> columns = new LinkedList<>();
                 for (int i2 = 0, len2 = pt.getChildCount(); i2 < len2; i2++) {
@@ -141,17 +142,52 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         if (ctx.getChild(0) instanceof CqlParser.AggregateFunctionCallContext) {
             return Column.of(visitAggregateFunctionCall((CqlParser.AggregateFunctionCallContext) ctx.getChild(0)), alias);
         } else if (ctx.getChild(0) instanceof CqlParser.SpecificFunctionCallContext) {
-
             return Column.of(visitSpecificFunctionCall((CqlParser.SpecificFunctionCallContext) ctx.getChild(0)), alias);
+        } else if (ctx.getChild(0) instanceof CqlParser.ScalarFunctionCallContext) {
+            return Column.of(visitScalarFunctionCall((CqlParser.ScalarFunctionCallContext) ctx.getChild(0)), alias);
         }
         return null;
     }
+
+    @Override
+    public Function visitScalarFunctionCall(CqlParser.ScalarFunctionCallContext ctx) {
+        String functionName = ctx.getChild(0).getText();
+        if ("date_format".equalsIgnoreCase(functionName)) {
+            if (ctx.getChildCount() == 4) {
+                CqlParser.FunctionArgsContext argsContext = (CqlParser.FunctionArgsContext) ctx.getChild(2);
+                if (argsContext.getChildCount() == 3) {
+                    if (argsContext.getChild(0) instanceof CqlParser.ScalarFunctionCallContext) {
+                        return DateFormat.of(visitScalarFunctionCall((CqlParser.ScalarFunctionCallContext) argsContext.getChild(0)), argsContext.getChild(2).getText());
+                    }
+                }
+            }
+        } else if ("date_sub".equalsIgnoreCase(functionName)) {
+            if (ctx.getChildCount() == 4) {
+                CqlParser.FunctionArgsContext argsContext = (CqlParser.FunctionArgsContext) ctx.getChild(2);
+                if (argsContext.getChildCount() == 3) {
+                    if (argsContext.getChild(0) instanceof CqlParser.ScalarFunctionCallContext) {
+                        CqlParser.PredicateExpressionContext expressionCtx = (CqlParser.PredicateExpressionContext) argsContext.getChild(2);
+                        CqlParser.IntervalExpressionAtomContext intervalExpressionCtx = (CqlParser.IntervalExpressionAtomContext) expressionCtx.getChild(0).getChild(0);
+                        return DateSub.of(visitScalarFunctionCall((CqlParser.ScalarFunctionCallContext) argsContext.getChild(0)),
+                                IntegerUtil.tryParse(intervalExpressionCtx.getChild(1).getText()), intervalExpressionCtx.getChild(2).getText());
+                    }
+                }
+
+            }
+        } else if ("curdate".equalsIgnoreCase(functionName)) {
+            return new CurDate();
+        }
+        return null;
+    }
+
+
 
     @Override
     public Function visitSpecificFunctionCall(CqlParser.SpecificFunctionCallContext ctx) {
         if (ctx.getChild(0) instanceof CqlParser.C_keyvalueFunctionCallContext) {
             return visitC_keyvalueFunctionCall((CqlParser.C_keyvalueFunctionCallContext) ctx.getChild(0));
         }
+
         return null;
     }
 
@@ -251,8 +287,29 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
         if (p instanceof CqlParser.AtomTableItemContext) {
             CqlParser.AtomTableItemContext t = (CqlParser.AtomTableItemContext) p;
             return Table.of(t.getChild(0).getText(), t.alias == null ? null : t.alias.getText());
+        } else if (p instanceof CqlParser.SubqueryTableItemContext) {
+            return visitSubqueryTableItem((CqlParser.SubqueryTableItemContext) p);
         }
         return null;
+    }
+
+    @Override
+    public TemporaryTable visitSubqueryTableItem(CqlParser.SubqueryTableItemContext ctx) {
+        CqlParser.SelectStatementContext selectStatementCtx = ctx.selectStatement();
+        for (int idx = 0; idx < selectStatementCtx.getChildCount(); idx++) {
+            ParseTree pt = selectStatementCtx.getChild(idx);
+            if (pt instanceof CqlParser.QueryExpressionContext) {
+                if (pt.getChildCount() == 3 && "(".equalsIgnoreCase(pt.getChild(0).getText()) && ")".equalsIgnoreCase(pt.getChild(2).getText())) {
+                    return TemporaryTable.of(visitQuerySpecification((CqlParser.QuerySpecificationContext) pt.getChild(1)), ctx.alias == null ? null : ctx.alias.getText());
+                }
+            }
+        }
+        return TemporaryTable.of(new SelectStatementImpl(), ctx.alias == null ? null : ctx.alias.getText());
+    }
+
+    @Override
+    public Node visitQueryExpression(CqlParser.QueryExpressionContext ctx) {
+        return super.visitQueryExpression(ctx);
     }
 
     private Expr visitExpr(ParseTree tree) {

@@ -52,6 +52,24 @@ public class CqlTest {
 
     }
 
+    @Test
+    public void test_nested_sql() {
+        String sql = "select /* AppId: Author:ygxie ReviewCode:RBBzLC202003180040 */  DATE_FORMAT(date_sub(CURDATE(),interval 2 DAY) , '%Y-%m-%d')as \"增值服务单据创建日期\", count AS " +
+                "'单据总数',BCount as '单据距今3日未结束总数',orderids as '未结束单抽样订单号' \n" +
+                "from(\n" +
+                "select count, Bcount,case BCount when 0 then null else (select GROUP_CONCAT(t.orderid) as orderids from(select orderid from eventrecord where " +
+                "DataChange_CreateTime between CURDATE() - INTERVAL 3 DAY AND CURDATE()- INTERVAL 2 DAY and Eventstatus<>'S' and BusinessType='AddService' limit 10) as t) end as" +
+                " orderids\n" +
+                "from(\n" +
+                "select count(1) as count,count(case when Eventstatus<>'S' then 1 end) as BCount\n" +
+                "from eventrecord \n" +
+                "where DataChange_CreateTime between CURDATE() - INTERVAL 3 DAY AND CURDATE()- INTERVAL 2 DAY and BusinessType='AddService'\n" +
+                ") as t1\n" +
+                ")as t2 ";
+        Statements statements = Cql.parse(sql);
+        Assert.assertTrue(statements != null && !statements.statements().isEmpty());
+    }
+
 
     public static class Model1 {
         private String v;

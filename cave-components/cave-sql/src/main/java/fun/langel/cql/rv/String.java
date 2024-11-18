@@ -1,6 +1,7 @@
 package fun.langel.cql.rv;
 
 import fun.langel.cql.exception.MappingException;
+import fun.langel.cql.node.Node;
 import fun.langel.cql.util.TimeUtil;
 
 import java.text.ParseException;

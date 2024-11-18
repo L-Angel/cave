@@ -7,7 +7,7 @@
     <groupId>fun.l-angel</groupId>
     <artifactId>cave</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0</version>
+    <version>0.0.4</version>
     <modules>
         <module>cave-components</module>
     </modules>
