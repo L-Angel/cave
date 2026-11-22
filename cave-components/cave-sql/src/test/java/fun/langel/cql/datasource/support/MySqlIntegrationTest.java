@@ -10,6 +10,7 @@ import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.rv.Rows;
 import fun.langel.cql.util.Pair;
 import fun.langel.cql.util.Props;
+import fun.langel.cql.util.StringUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -30,14 +32,20 @@ import java.util.List;
 /**
  * Verifies that the JDBC path really passes MySQL syntax through, including
  * JOIN, CTE, window functions, IN (${list}) expansion and type mapping.
+ * Locally it uses Testcontainers; in CI a GitHub Actions MySQL service can be
+ * supplied through CAVE_MYSQL_SERVICE_* environment variables.
  *
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
  */
 @Category(IntegrationTest.class)
 public class MySqlIntegrationTest {
 
-    @ClassRule
-    public static final MySQLContainer<?> MYSQL = new MySQLContainer<>(
+    private static final String SERVICE_HOST = System.getenv("CAVE_MYSQL_SERVICE_HOST");
+    private static final String SERVICE_DB = env("CAVE_MYSQL_SERVICE_DBNAME", "cave");
+    private static final String SERVICE_USER = env("CAVE_MYSQL_SERVICE_USERNAME", "cave");
+    private static final String SERVICE_PASSWORD = env("CAVE_MYSQL_SERVICE_PASSWORD", "cave");
+
+    private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>(
             DockerImageName.parse("public.ecr.aws/docker/library/mysql:8.0.36")
                     .asCompatibleSubstituteFor("mysql"))
             .withDatabaseName("cave")
@@ -46,20 +54,39 @@ public class MySqlIntegrationTest {
             .withUrlParam("useSSL", "false")
             .withUrlParam("allowPublicKeyRetrieval", "true");
 
+    @ClassRule
+    public static final ExternalResource MYSQL = new ExternalResource() {
+        @Override
+        protected void before() {
+            if (!useExternalService()) {
+                CONTAINER.start();
+            }
+        }
+
+        @Override
+        protected void after() {
+            if (CONTAINER.isRunning()) {
+                CONTAINER.stop();
+            }
+        }
+    };
+
     private static JdbcDataSource DATA_SOURCE;
 
     @BeforeClass
     public static void configureDatasource() throws Exception {
         Props.setOverride(Const.CAVE_MYSQL_URL, null);
-        Props.setOverride(Const.CAVE_MYSQL_HOST, MYSQL.getHost() + ":" + MYSQL.getMappedPort(3306));
-        Props.setOverride(Const.CAVE_MYSQL_DBNAME, MYSQL.getDatabaseName());
-        Props.setOverride(Const.CAVE_MYSQL_USERNAME, MYSQL.getUsername());
-        Props.setOverride(Const.CAVE_MYSQL_PASSWORD, MYSQL.getPassword());
+        Props.setOverride(Const.CAVE_MYSQL_HOST, host());
+        Props.setOverride(Const.CAVE_MYSQL_DBNAME, database());
+        Props.setOverride(Const.CAVE_MYSQL_USERNAME, username());
+        Props.setOverride(Const.CAVE_MYSQL_PASSWORD, password());
         Props.setOverride(Const.CAVE_MYSQL_URL_PARAMS, "useSSL=false&allowPublicKeyRetrieval=true");
 
         try (java.sql.Connection connection = DriverManager.getConnection(
-                MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword());
+                jdbcUrl(), username(), password());
              Statement statement = connection.createStatement()) {
+            statement.execute("drop table if exists orders");
+            statement.execute("drop table if exists users");
             statement.execute("create table users ("
                     + "id bigint primary key, name varchar(64), score decimal(10,2), "
                     + "active boolean, created timestamp)");
@@ -76,7 +103,7 @@ public class MySqlIntegrationTest {
     @Before
     public void resetData() throws Exception {
         try (java.sql.Connection connection = DriverManager.getConnection(
-                MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword());
+                jdbcUrl(), username(), password());
              Statement statement = connection.createStatement()) {
             statement.execute("update users set score=12.50, active=true where id=1");
             statement.execute("update users set score=5.00, active=false where id=2");
@@ -159,6 +186,40 @@ public class MySqlIntegrationTest {
         Assert.assertEquals(new BigDecimal("99.90"), user.score);
         Assert.assertFalse(user.active);
         Assert.assertEquals(LocalDateTime.of(2024, 2, 3, 4, 5, 6), user.created);
+    }
+
+    private static String env(String key, String defaultValue) {
+        String value = System.getenv(key);
+        return StringUtil.isEmpty(value) ? defaultValue : value;
+    }
+
+    private static boolean useExternalService() {
+        return !StringUtil.isEmpty(SERVICE_HOST);
+    }
+
+    private static String host() {
+        return useExternalService() ? SERVICE_HOST
+                : CONTAINER.getHost() + ":" + CONTAINER.getMappedPort(3306);
+    }
+
+    private static String database() {
+        return useExternalService() ? SERVICE_DB : CONTAINER.getDatabaseName();
+    }
+
+    private static String username() {
+        return useExternalService() ? SERVICE_USER : CONTAINER.getUsername();
+    }
+
+    private static String password() {
+        return useExternalService() ? SERVICE_PASSWORD : CONTAINER.getPassword();
+    }
+
+    private static String jdbcUrl() {
+        if (!useExternalService()) {
+            return CONTAINER.getJdbcUrl();
+        }
+        return "jdbc:mysql://" + SERVICE_HOST + "/" + SERVICE_DB
+                + "?useSSL=false&allowPublicKeyRetrieval=true";
     }
 
     private ReturnValue<?> query(String sql) {

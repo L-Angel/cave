@@ -50,6 +50,26 @@ jobs:
     name: MySQL integration
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      mysql:
+        image: public.ecr.aws/docker/library/mysql:8.0.36
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: cave
+          MYSQL_USER: cave
+          MYSQL_PASSWORD: cave
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u cave -pcave"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    env:
+      CAVE_MYSQL_SERVICE_HOST: 127.0.0.1:3306
+      CAVE_MYSQL_SERVICE_DBNAME: cave
+      CAVE_MYSQL_SERVICE_USERNAME: cave
+      CAVE_MYSQL_SERVICE_PASSWORD: cave
     steps:
       - name: Checkout
         uses: actions/checkout@v4
