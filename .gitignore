@@ -1,9 +1,5 @@
 # Build output
 target/
-_site/
-.jekyll-cache/
-.jekyll-metadata
-.sass-cache/
 *.class
 pom_corp.xml
 

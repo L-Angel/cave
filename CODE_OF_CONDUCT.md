@@ -1,8 +1,3 @@
----
-layout: default
-title: 行为准则
----
-
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge

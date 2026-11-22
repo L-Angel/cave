@@ -36,7 +36,7 @@ import java.util.List;
 public class MySqlIntegrationTest {
 
     @ClassRule
-    public static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0.36")
+    public static final MySQLContainer<?> MYSQL = new MySQLContainer<>("public.ecr.aws/docker/library/mysql:8.0.36")
             .withDatabaseName("cave")
             .withUsername("cave")
             .withPassword("cave")

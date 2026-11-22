@@ -1,8 +1,3 @@
----
-layout: default
-title: 安全策略
----
-
 # Security Policy
 
 ## Supported Versions

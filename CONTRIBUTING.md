@@ -1,8 +1,3 @@
----
-layout: default
-title: 贡献指南
----
-
 # 贡献指南
 
 感谢你考虑为 Cave 做贡献。这是一个使用统一 SQL/CQL 语法访问 Elasticsearch、MongoDB 和 MySQL 的数据访问层。

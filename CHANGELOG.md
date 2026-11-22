@@ -1,8 +1,3 @@
----
-layout: default
-title: 变更日志
----
-
 # Changelog
 
 All notable changes to this project are documented in this file.
@@ -50,8 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `LocalDate`/`LocalTime` and `byte[]` (`rv.Boolean`, `rv.Bytes`).
 - MySQL Testcontainers integration test covering JOIN, CTE, window functions,
   `IN (${list})`, DML binding and type mapping.
-- GitHub Pages documentation site built with Jekyll and deployed through
-  GitHub Actions from `README.md`.
+- Documentation site refreshed at <https://l-angel.github.io/cave/>.
 - Starter support for `cave.elasticsearch.group-size`.
 - MongoDB `DISTINCT` (lowered to `$group`), field-to-field comparisons
   (`$expr`), `LIKE ... ESCAPE` and `ORDER BY` positional ordinals.

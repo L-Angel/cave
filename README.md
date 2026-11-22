@@ -9,7 +9,7 @@ Cave
 [![Maven](https://img.shields.io/badge/Maven-3.6.3%2B-blue.svg)](https://maven.apache.org/)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://L-Angel.github.io/cave/)
 
-文档站点：<https://L-Angel.github.io/cave/>
+文档站点：<https://l-angel.github.io/cave/>
 
 > 最新发布版本：**0.1.0**。当前 `main` 分支为 **0.1.1-SNAPSHOT**，包含尚未发布的
 > Spring Boot Starter 与参数校验改进。
@@ -482,13 +482,12 @@ select * from t where f1 = ${p1}                  -- 列表值展开为 ('a','b'
 
 # 文档站点
 
-本项目的使用文档和支持矩阵同时发布在 GitHub Pages：
+使用文档和支持矩阵同时发布在用户站点：
 
-<https://L-Angel.github.io/cave/>
+<https://l-angel.github.io/cave/>
 
-Pages 由 `.github/workflows/pages.yml` 在 `main` 分支更新时自动构建部署。
-首次启用时，需要在仓库 **Settings → Pages → Build and deployment → Source**
-中选择 **GitHub Actions**。
+文档页面由 `L-Angel/l-angel.github.io` 仓库的 `master` 分支维护；
+推送该仓库后 GitHub Pages 会自动更新。
 
 # 构建与测试
 

@@ -1,8 +1,3 @@
----
-layout: default
-title: 发布说明
----
-
 # Release notes
 
 The full and up-to-date history is maintained in [CHANGELOG.md](CHANGELOG.md).
@@ -23,7 +18,7 @@ The full and up-to-date history is maintained in [CHANGELOG.md](CHANGELOG.md).
 - Elasticsearch `GROUP BY` / `HAVING` using composite aggregations.
 - MySQL HikariCP connection pool.
 - MySQL Testcontainers integration coverage.
-- GitHub Pages documentation site.
+- Documentation site refreshed at <https://l-angel.github.io/cave/>.
 
 ## 0.1.0
 
