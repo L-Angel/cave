@@ -81,8 +81,11 @@ jobs:
               for (const file of fs.readdirSync(root)) {
                 if (!file.endsWith('.txt')) continue;
                 const text = fs.readFileSync(path.join(root, file), 'utf8');
-                const match = text.match(/(FAILURE|ERROR)![\s\S]{0,1800}/);
-                core.error((match ? match[0] : text).slice(0, 1800), { title: file });
+                const marker = text.indexOf('Caused by:');
+                const detail = marker >= 0
+                  ? text.slice(marker, marker + 8000)
+                  : text.slice(0, 8000);
+                core.error(detail, { title: file });
                 emitted++;
                 if (emitted >= 3) break;
               }
