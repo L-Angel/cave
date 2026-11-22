@@ -67,3 +67,26 @@ jobs:
           -Dtest=MySqlIntegrationTest
           -Dsurefire.failIfNoSpecifiedTests=false
           test
+
+      - name: Annotate MySQL test failures
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const root = 'cave-components/cave-sql/target/surefire-reports';
+            let emitted = 0;
+            if (fs.existsSync(root)) {
+              for (const file of fs.readdirSync(root)) {
+                if (!file.endsWith('.txt')) continue;
+                const text = fs.readFileSync(path.join(root, file), 'utf8');
+                const match = text.match(/(FAILURE|ERROR)![\s\S]{0,1800}/);
+                core.error((match ? match[0] : text).slice(0, 1800), { title: file });
+                emitted++;
+                if (emitted >= 3) break;
+              }
+            }
+            if (emitted === 0) {
+              core.error('No surefire report found; inspect the Testcontainers/container logs in the job output.');
+            }
