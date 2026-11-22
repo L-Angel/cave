@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2022. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
- * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
- * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
- * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
- * Vestibulum commodo. Ut rhoncus gravida arcu.
+ * Copyright 2021-2026 Rick Jiang and Cave contributors.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package fun.langel.cql.node.func;
@@ -20,12 +17,20 @@ public class Count implements Function {
 
     private final Column executable;
 
-    private Count(Column executable) {
+    private final boolean distinct;
+
+    private Count(Column executable, boolean distinct) {
         this.executable = executable;
+        this.distinct = distinct;
     }
 
     public boolean matchAll() {
-        return "*".equalsIgnoreCase(executable.name()) || "1".equalsIgnoreCase(executable.name());
+        return !this.distinct
+                && ("*".equalsIgnoreCase(executable.name()) || "1".equalsIgnoreCase(executable.name()));
+    }
+
+    public boolean distinct() {
+        return this.distinct;
     }
 
     @Override
@@ -34,7 +39,11 @@ public class Count implements Function {
     }
 
     public static Count of(Column column) {
-        return new Count(column);
+        return new Count(column, false);
+    }
+
+    public static Count of(Column column, boolean distinct) {
+        return new Count(column, distinct);
     }
 
 

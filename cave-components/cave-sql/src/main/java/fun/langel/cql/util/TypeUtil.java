@@ -1,5 +1,10 @@
 package fun.langel.cql.util;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +23,20 @@ public class TypeUtil {
 
     public static boolean isMap(Class<?> type) {
         return Map.class.isAssignableFrom(type);
+    }
+
+    public static boolean isSimple(Class<?> type) {
+        return type.isPrimitive()
+                || java.lang.String.class.equals(type)
+                || java.lang.Number.class.isAssignableFrom(type)
+                || BigDecimal.class.equals(type)
+                || java.lang.Boolean.class.equals(type)
+                || java.lang.Character.class.equals(type)
+                || Date.class.isAssignableFrom(type)
+                || LocalDateTime.class.equals(type)
+                || LocalDate.class.equals(type)
+                || LocalTime.class.equals(type)
+                || byte[].class.equals(type);
     }
 
 

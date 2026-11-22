@@ -18,10 +18,17 @@ public class ExprImpl implements Expr {
 
     private Value end;
 
+    private Character escape;
+
     public ExprImpl(final Node left, final Operator operator, final Node right) {
+        this(left, operator, right, null);
+    }
+
+    public ExprImpl(final Node left, final Operator operator, final Node right, final Character escape) {
         this.left = left;
         this.operator = operator;
         this.right = right;
+        this.escape = escape;
     }
 
     public ExprImpl(final Column column, final Value begin, final Value end) {
@@ -55,5 +62,10 @@ public class ExprImpl implements Expr {
     @Override
     public Value end() {
         return this.end;
+    }
+
+    @Override
+    public Character escape() {
+        return this.escape;
     }
 }

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev_ai]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (JDK ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['8', '11', '17', '21']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Verify wrapper
+        run: ./mvnw -v
+
+      - name: Run offline tests
+        run: ./mvnw -B -ntp test
+
+      - name: Package
+        run: ./mvnw -B -ntp -DskipTests package
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-jdk-${{ matrix.java }}
+          path: '**/target/surefire-reports/**'
+          if-no-files-found: ignore
+
+  mysql-integration:
+    name: MySQL integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run MySQL integration test
+        run: >-
+          ./mvnw -B -ntp -Pintegration-tests
+          -Dtest=MySqlIntegrationTest
+          -Dsurefire.failIfNoSpecifiedTests=false
+          test

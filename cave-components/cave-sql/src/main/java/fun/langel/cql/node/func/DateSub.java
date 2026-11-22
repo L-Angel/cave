@@ -1,8 +1,11 @@
 package fun.langel.cql.node.func;
 
+import fun.langel.cql.exception.SqlException;
 import fun.langel.cql.node.Function;
 import fun.langel.cql.node.Node;
 import fun.langel.cql.node.obj.Date;
+
+import java.util.Locale;
 
 /**
  * @author Rick(lonelyangel.jcw @ gmail.com)
@@ -52,8 +55,17 @@ public class DateSub implements Function {
 
     @Override
     public Node executable() {
-        Date d = function != null ? ((Date) function.executable()) : this.date;
-        switch (unit) {
+        Node resolved = function != null ? function.executable() : this.date;
+        if (!(resolved instanceof Date)) {
+            throw new SqlException("date_sub requires a date expression but got: " + resolved);
+        }
+        if (unit == null) {
+            throw new SqlException("date_sub requires an interval unit.");
+        }
+        Date d = (Date) resolved;
+        // Grammar tokens keep their original case (DAY, Month, ...), so normalize
+        // before comparing with the lower-case constants.
+        switch (unit.toLowerCase(Locale.ROOT)) {
             case DAY:
                 return new Date(d.getLocalDate().plusDays(-interval));
 
@@ -72,7 +84,8 @@ public class DateSub implements Function {
             case SECOND:
                 return new Date(d.getLocalDate().plusSeconds(-interval));
 
+            default:
+                throw new SqlException("Unsupported date_sub interval unit: " + unit);
         }
-        return null;
     }
 }

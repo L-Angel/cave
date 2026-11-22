@@ -30,4 +30,12 @@ public interface SelectStatement extends Statement {
     default GroupBy groupBy() {
         return null;
     }
+
+    default boolean distinct() {
+        return false;
+    }
+
+    default Expr having() {
+        return null;
+    }
 }

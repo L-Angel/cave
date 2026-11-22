@@ -3,6 +3,7 @@ package fun.langel.cql.bind;
 import fun.langel.cql.annotation.*;
 import fun.langel.cql.datasource.DataSource;
 import fun.langel.cql.datasource.DataSourceHolder;
+import fun.langel.cql.datasource.DataSourceType;
 import fun.langel.cql.exception.DataSourceException;
 import fun.langel.cql.invoke.Invocation;
 import fun.langel.cql.invoke.Invoker;
@@ -28,6 +29,8 @@ import java.util.List;
  **/
 public class CaveMethod {
 
+    private static final ParameterResolver PARAMETER_RESOLVER = new ParameterResolver();
+
     private Class<?> klass;
 
     private MethodSignature signature;
@@ -45,46 +48,49 @@ public class CaveMethod {
     }
 
     public Object execute(Object... values) {
-        checkArguments(values);
-        Arg[] args = args(this.signature.method.getParameters(), values);
-        Target target = target(args);
-        Invoker invoker = Invoker.EMPTY;
-        ParameterResolver resolver = new ParameterResolver();
-        Pair<String, List<fun.langel.cql.parameter.Parameter>> pair = resolver.resolve(this.signature.sql(), args);
+        Target target = target(args(this.signature.method.getParameters(), values));
+        Invoker invoker;
 
         DataSourceHolder holder = resolveDataSource(this.signature.direct());
         if (holder == null) {
             throw new DataSourceException("Not matched any datasource " + this.signature.direct);
         }
+        DataSource dataSource = holder.getDataSource();
+        Pair<String, List<fun.langel.cql.parameter.Parameter>> pair =
+                dataSource.type() == DataSourceType.MYSQL
+                        ? PARAMETER_RESOLVER.resolveForJdbc(this.signature.sql(), target.args())
+                        : PARAMETER_RESOLVER.resolve(this.signature.sql(), target.args());
+
         if (this.signature.isSelect()) {
-            invoker = new SelectInvoker(target, holder.getDataSource(), this.signature.sql(), pair);
+            invoker = new SelectInvoker(target, dataSource, this.signature.sql(), pair);
         } else if (this.signature.isDelete()) {
-            invoker = new DeleteInvoker(target, holder.getDataSource(), this.signature.sql(), pair);
+            invoker = new DeleteInvoker(target, dataSource, this.signature.sql(), pair);
         } else if (this.signature.isInsert()) {
-            invoker = new InsertInvoker();
+            invoker = new InsertInvoker(target, dataSource, this.signature.sql(), pair);
         } else if (this.signature.isUpdate()) {
-            invoker = new UpdateInvoker();
+            invoker = new UpdateInvoker(target, dataSource, this.signature.sql(), pair);
+        } else {
+            throw new IllegalArgumentException("Method " + this.signature.method
+                    + " must be annotated with @Select, @Insert, @Update or @Delete.");
         }
         Result result = invoker.invoke(this.invocation);
         return result.getValue();
     }
 
 
-    private void checkArguments(Object... args) {
-        if (args != null && args.length < 0) {
-            throw new IllegalArgumentException("Illegal argument size.");
-        }
-    }
-
     private Target target(final Arg[] args) {
         return () -> args;
     }
 
     private Arg[] args(final Parameter[] parameters, Object... values) {
-        if (values == null) {
+        if (values == null || values.length == 0) {
             return new Arg[0];
         }
-        final Arg[] args = new Arg[parameters.length];
+        if (values.length > parameters.length) {
+            throw new IllegalArgumentException("Illegal argument size: expected at most "
+                    + parameters.length + " but got " + values.length);
+        }
+        final Arg[] args = new Arg[values.length];
         for (int idx = 0, len = values.length; idx < len; idx++) {
             Parameter parameter = parameters[idx];
             Param param = parameter.getDeclaredAnnotation(Param.class);
@@ -170,7 +176,7 @@ public class CaveMethod {
         }
 
         public boolean isUpdate() {
-            return this.deleteAnno != null;
+            return this.updateAnno != null;
         }
 
         public boolean isInsert() {
@@ -179,11 +185,18 @@ public class CaveMethod {
 
         public Class<?> actualType() {
             Class<?> returnType = returnType();
-            if (List.class.isAssignableFrom(returnType())) {
-                // if (Object.class != returnType) {
-                //     return returnType;
-                // }
-                return (Class<?>) ((ParameterizedType) this.method.getGenericReturnType()).getActualTypeArguments()[0];
+            if (List.class.isAssignableFrom(returnType)) {
+                Type genericType = this.method.getGenericReturnType();
+                if (genericType instanceof ParameterizedType) {
+                    Type argument = ((ParameterizedType) genericType).getActualTypeArguments()[0];
+                    if (argument instanceof Class) {
+                        return (Class<?>) argument;
+                    }
+                    if (argument instanceof ParameterizedType) {
+                        return (Class<?>) ((ParameterizedType) argument).getRawType();
+                    }
+                }
+                return Object.class;
             }
             return returnType;
         }

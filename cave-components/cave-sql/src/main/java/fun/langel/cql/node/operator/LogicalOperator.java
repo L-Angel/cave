@@ -9,6 +9,7 @@ import fun.langel.cql.util.StringUtil;
 public enum LogicalOperator implements Operator {
 
     NONE,
+    NOT,
     AND,
     OR;
 
@@ -17,11 +18,14 @@ public enum LogicalOperator implements Operator {
             return NONE;
         }
         o = StringUtil.trim(o);
-        if ("and".equalsIgnoreCase(o)) {
+        if ("and".equalsIgnoreCase(o) || "&&".equalsIgnoreCase(o) || "&".equalsIgnoreCase(o)) {
             return AND;
         }
-        if ("or".equalsIgnoreCase(o) || "||".equalsIgnoreCase(o)) {
+        if ("or".equalsIgnoreCase(o) || "||".equalsIgnoreCase(o) || "|".equalsIgnoreCase(o)) {
             return OR;
+        }
+        if ("not".equalsIgnoreCase(o) || "!".equalsIgnoreCase(o)) {
+            return NOT;
         }
 
         return NONE;

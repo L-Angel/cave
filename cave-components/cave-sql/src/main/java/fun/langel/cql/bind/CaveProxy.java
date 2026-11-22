@@ -32,11 +32,24 @@ public class CaveProxy implements InvocationHandler, Serializable {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (Object.class.equals(method.getDeclaringClass())) {
-            return method.invoke(this, args);
+            return invokeObjectMethod(proxy, method, args);
         } else if (isDefaultMethod(method)) {
             return invokeDefaultMethod(proxy, method, args);
         }
         return cachedMethod(method).execute(args);
+    }
+
+    private Object invokeObjectMethod(Object proxy, Method method, Object[] args) throws Throwable {
+        switch (method.getName()) {
+            case "equals":
+                return proxy == args[0];
+            case "hashCode":
+                return System.identityHashCode(proxy);
+            case "toString":
+                return "Cave proxy for " + this.klass.getName();
+            default:
+                return method.invoke(this, args);
+        }
     }
 
     public CaveMethod cachedMethod(final Method method) {
@@ -44,17 +57,27 @@ public class CaveProxy implements InvocationHandler, Serializable {
     }
 
     public Object invokeDefaultMethod(Object proxy, Method method, Object... args) throws Throwable {
-        final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-                .getDeclaredConstructor(Class.class, int.class);
-        if (!constructor.isAccessible()) {
-            constructor.setAccessible(true);
-        }
         final Class<?> declaringClass = method.getDeclaringClass();
-        return constructor
-                .newInstance(declaringClass,
-                        MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
-                                | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC)
-                .unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);
+        final MethodHandles.Lookup lookup = defaultLookup(declaringClass);
+        Object[] actualArgs = args == null ? new Object[0] : args;
+        return lookup.unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(actualArgs);
+    }
+
+    private static MethodHandles.Lookup defaultLookup(Class<?> declaringClass) throws Exception {
+        try {
+            // Java 9+: the private Lookup constructor used below no longer exists.
+            Method privateLookupIn = MethodHandles.class.getMethod("privateLookupIn",
+                    Class.class, MethodHandles.Lookup.class);
+            return (MethodHandles.Lookup) privateLookupIn.invoke(null, declaringClass,
+                    MethodHandles.lookup());
+        } catch (NoSuchMethodException notJava9) {
+            final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                    .getDeclaredConstructor(Class.class, int.class);
+            constructor.setAccessible(true);
+            return constructor.newInstance(declaringClass,
+                    MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
+                            | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC);
+        }
     }
 
     public boolean isDefaultMethod(final Method method) {

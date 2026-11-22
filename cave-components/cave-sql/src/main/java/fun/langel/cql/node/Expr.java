@@ -28,4 +28,11 @@ public interface Expr extends Node {
     default Value end() {
         return new Value(null, false, false);
     }
+
+    /**
+     * Optional LIKE escape character ({@code LIKE ... ESCAPE '!'}).
+     */
+    default Character escape() {
+        return null;
+    }
 }

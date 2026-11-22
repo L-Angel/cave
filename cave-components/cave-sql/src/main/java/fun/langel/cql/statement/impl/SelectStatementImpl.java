@@ -22,6 +22,10 @@ public class SelectStatementImpl implements SelectStatement {
 
     private GroupBy groupBy;
 
+    private boolean distinct;
+
+    private Expr having;
+
     public SelectStatementImpl() {
     }
 
@@ -44,6 +48,14 @@ public class SelectStatementImpl implements SelectStatement {
 
     public void setGroupBy(final GroupBy groupBy) {
         this.groupBy = groupBy;
+    }
+
+    public void setDistinct(final boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    public void setHaving(final Expr having) {
+        this.having = having;
     }
 
 
@@ -81,5 +93,15 @@ public class SelectStatementImpl implements SelectStatement {
     @Override
     public GroupBy groupBy() {
         return this.groupBy;
+    }
+
+    @Override
+    public boolean distinct() {
+        return this.distinct;
+    }
+
+    @Override
+    public Expr having() {
+        return this.having;
     }
 }

@@ -1,7 +1,6 @@
 package fun.langel.cql.datasource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fun.langel.cql.exception.DataSourceException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,8 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class DataSourceHolder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceHolder.class);
-    private DataSource dataSource;
+    private volatile DataSource dataSource;
 
     private final String name;
 
@@ -53,10 +51,9 @@ public class DataSourceHolder {
     private DataSource create() {
         Class<?> kls = this.klass;
         try {
-            return (DataSource) kls.newInstance();
-        } catch (Exception ex) {
-            LOG.error(ex.getMessage(), ex);
-            return null;
+            return (DataSource) kls.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException ex) {
+            throw new DataSourceException("Failed to create datasource: " + kls.getName(), ex);
         }
     }
 

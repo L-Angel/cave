@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title and page.title != site.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+<header class="page-header" role="banner">
+  <h1 class="project-name">{{ site.title | default: 'Cave' }}</h1>
+  <h2 class="project-tagline">{{ site.description }}</h2>
+  <a href="https://github.com/L-Angel/cave" class="btn">GitHub</a>
+  <a href="{{ '/' | relative_url }}" class="btn">文档首页</a>
+</header>
+<main id="content" class="main-content" role="main">
+  {{ content }}
+</main>
+<footer class="site-footer">
+  <span class="site-footer-owner">
+    <a href="https://github.com/L-Angel/cave">Cave</a> is maintained by Rick Jiang.
+  </span>
+  <span class="site-footer-credits">Apache License 2.0</span>
+</footer>
+</body>
+</html>

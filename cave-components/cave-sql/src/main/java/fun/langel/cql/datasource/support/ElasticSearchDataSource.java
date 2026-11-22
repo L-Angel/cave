@@ -6,6 +6,7 @@ import fun.langel.cql.Language;
 import fun.langel.cql.constant.Const;
 import fun.langel.cql.datasource.*;
 import fun.langel.cql.dialect.Dialect;
+import fun.langel.cql.exception.DataSourceException;
 import fun.langel.cql.resolve.DialectResolver;
 import fun.langel.cql.resolve.RvResolver;
 import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
@@ -38,7 +39,7 @@ import java.util.Properties;
  **/
 public class ElasticSearchDataSource implements DataSource {
 
-    private Connection connection;
+    private volatile Connection connection;
 
     @Override
     public DataSourceType type() {
@@ -50,6 +51,9 @@ public class ElasticSearchDataSource implements DataSource {
         Properties props = new Properties();
         String host = StringUtil.isEmpty(Props.getProperty(Const.CAVE_ELASTICSEARCH_HOST)) ?
                 Props.getProperty(Const.ES_HOST) : Props.getProperty(Const.CAVE_ELASTICSEARCH_HOST);
+        if (StringUtil.isEmpty(host)) {
+            throw new DataSourceException("Missing datasource property: " + Const.CAVE_ELASTICSEARCH_HOST);
+        }
         props.setProperty(Const.CAVE_ELASTICSEARCH_HOST, host);
         String username = StringUtil.isEmpty(Props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME)) ?
                 Props.getProperty(Const.ES_USERNAME) : Props.getProperty(Const.CAVE_ELASTICSEARCH_USERNAME);
@@ -59,7 +63,7 @@ public class ElasticSearchDataSource implements DataSource {
                 Props.getProperty(Const.ES_PASSWORD) : Props.getProperty(Const.CAVE_ELASTICSEARCH_PASSWORD);
         props.setProperty(Const.CAVE_ELASTICSEARCH_PASSWORD, password == null ? "" : password);
         if (this.connection == null) {
-            synchronized (ElasticSearchDataSource.class) {
+            synchronized (this) {
                 if (this.connection == null) {
                     this.connection = createConnection(props);
                 }
@@ -90,13 +94,14 @@ class ElasticSearchConnection implements Connection {
 
     private void prepareArguments() {
         String pHosts = this.props.getProperty(Const.CAVE_ELASTICSEARCH_HOST);
-
-
         String[] hostArray = pHosts.split(",");
         final HttpHost[] hosts = new HttpHost[hostArray.length];
 
         for (int idx = 0, len = hostArray.length; idx < len; idx++) {
-            StringBuilder host = new StringBuilder(hostArray[idx]);
+            StringBuilder host = new StringBuilder(hostArray[idx].trim());
+            if (host.length() == 0) {
+                throw new DataSourceException("Illegal elasticsearch host list: " + pHosts);
+            }
             if (host.indexOf(":") < 0) {
                 host.append(":9200");
             }
@@ -150,7 +155,7 @@ class ElasticSearchSession extends PreparedSession {
 
     private final DialectResolver<SelectStatement, SearchRequest> dialectResolver;
 
-    private final RvResolver<SearchResponse> rvResolver;
+    private final ElasticSearchRvResolver rvResolver;
 
     public ElasticSearchSession(final Properties props, final RestHighLevelClient restClient) {
         this.props = props;
@@ -167,23 +172,25 @@ class ElasticSearchSession extends PreparedSession {
     @Override
     public ReturnValue<?> executeQuery0(String sql) {
         SelectStatement select = Cql.parseSelectStatement(sql);
+        if (select.limit() != null && select.limit().fetch() == 0) {
+            return new fun.langel.cql.rv.Rows();
+        }
         Dialect<SearchRequest> dialect = this.dialectResolver.resolve(select);
         try {
             SearchResponse esResp = this.restClient.search(dialect.content(), RequestOptions.DEFAULT);
-            return this.rvResolver.resolve(esResp, select.columns());
+            return this.rvResolver.resolve(esResp, select);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            throw new DataSourceException("Failed to execute elasticsearch query: " + sql, e);
         }
-        return null;
     }
 
     @Override
     public Number executeUpdate0(String sql) {
-        return null;
+        throw new UnsupportedOperationException("UPDATE is not supported for elasticsearch datasources yet.");
     }
 
     @Override
     public Number executeDelete0(String sql) {
-        return null;
+        throw new UnsupportedOperationException("DELETE is not supported for elasticsearch datasources yet.");
     }
 }

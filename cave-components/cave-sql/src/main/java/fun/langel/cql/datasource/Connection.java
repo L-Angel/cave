@@ -7,4 +7,11 @@ package fun.langel.cql.datasource;
 public interface Connection {
 
     Session getSession();
+
+    /**
+     * Releases the underlying physical connection when this connection owns one.
+     * Shared/long-lived connections (ES, Mongo) can keep the no-op default.
+     */
+    default void close() {
+    }
 }

@@ -1,3 +1,8 @@
+/*
+ * Copyright 2021-2026 Rick Jiang and Cave contributors.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package fun.langel.cql.resolve.rv;
 
 import fun.langel.cql.node.Column;
@@ -5,7 +10,6 @@ import fun.langel.cql.resolve.RvResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.rv.Row;
 import fun.langel.cql.rv.Rows;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -23,7 +27,9 @@ public class MongoRvResolver implements RvResolver<List<Bson>> {
             return rows;
         }
         for (Bson bson : from) {
-            rows.add(resolve(((Document) bson)));
+            Row row = resolve((Document) bson);
+            RowProjector.apply(row, columns);
+            rows.add(row);
         }
         return rows;
     }

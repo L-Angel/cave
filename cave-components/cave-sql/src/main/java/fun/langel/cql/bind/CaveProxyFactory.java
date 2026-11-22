@@ -4,8 +4,8 @@ import fun.langel.cql.spring.Configuration;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author jiangchuanwei.jcw@alibaba-inc.com(GuHan)
@@ -16,7 +16,7 @@ public class CaveProxyFactory<T> {
     private Class<?> klass;
 
     private Configuration configuration;
-    private final Map<Method, CaveMethod> methodCache = new HashMap<>();
+    private final Map<Method, CaveMethod> methodCache = new ConcurrentHashMap<>();
 
     public CaveProxyFactory(final Configuration configuration,
                             final Class<?> klass) {

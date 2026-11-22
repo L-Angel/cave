@@ -12,6 +12,7 @@ import fun.langel.cql.statement.SelectStatement;
 import org.elasticsearch.action.search.SearchRequest;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,6 +25,7 @@ import java.util.List;
  * @since 2022/8/9 21:05
  **/
 @RunWith(SpringRunner.class)
+@Category(IntegrationTest.class)
 @CaveScan(packages = {"fun.langel.cql.cave"},
         useDefaultElasticSearch = true)
 public class CaveScanTest {

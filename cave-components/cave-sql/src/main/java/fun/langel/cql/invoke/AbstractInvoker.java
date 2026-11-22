@@ -1,5 +1,6 @@
 package fun.langel.cql.invoke;
 
+import fun.langel.cql.Language;
 import fun.langel.cql.bind.Target;
 import fun.langel.cql.datasource.Connection;
 import fun.langel.cql.datasource.DataSource;
@@ -53,17 +54,84 @@ public abstract class AbstractInvoker implements Invoker {
     }
 
     public Session getSession() {
-        Session session = getConnection() == null ? null : getConnection().getSession();
-        if (session == null) {
+        Connection connection = getConnection();
+        if (connection == null) {
             throw new DataSourceException("Dont find any matched datasource.");
         }
-        if (session instanceof PreparedSession) {
+        Session session;
+        try {
+            session = connection.getSession();
+        } catch (RuntimeException ex) {
+            connection.close();
+            throw ex;
+        }
+        if (session == null) {
+            connection.close();
+            throw new DataSourceException("Dont find any matched datasource.");
+        }
+        if (session instanceof PreparedSession && parameterized() != null) {
             ((PreparedSession) session).setParameters(parameterized().right());
         }
         return session;
     }
 
+    /**
+     * SQL with positional {@code ?} placeholders, used by JDBC sessions which bind
+     * parameters through {@link java.sql.PreparedStatement}. Non-JDBC sessions
+     * consume the original SQL and interpolate values themselves.
+     */
+    public String executableSql() {
+        Pair<String, List<Parameter>> pair = parameterized();
+        if (pair == null || pair instanceof Pair.EmptyPair || pair.left() == null) {
+            return this.sql;
+        }
+        return pair.left();
+    }
+
     public Pair<String, List<Parameter>> parameterized() {
         return this.parameterized;
+    }
+
+    /**
+     * Executes a DML statement. DML is currently implemented for JDBC datasources
+     * only; ES and Mongo throw instead of silently returning a fake result.
+     */
+    protected Result invokeUpdate(Invocation iv, String operation) {
+        Session session = getSession();
+        try {
+            Language lang = session.lang();
+            if (lang != Language.MYSQL) {
+                throw new UnsupportedOperationException(operation
+                        + " is only supported for JDBC datasources, current language: " + lang);
+            }
+            java.lang.Number affected = session.executeUpdate(executableSql());
+            Result result = new Result();
+            result.setValue(mapAffectedRows(affected, iv.returnType()));
+            return result;
+        } finally {
+            session.close();
+        }
+    }
+
+    private Object mapAffectedRows(java.lang.Number affected, Class<?> returnType) {
+        if (void.class.equals(returnType) || Void.class.equals(returnType)) {
+            return null;
+        }
+        if (affected == null) {
+            return null;
+        }
+        if (int.class.equals(returnType) || Integer.class.equals(returnType)) {
+            return affected.intValue();
+        }
+        if (long.class.equals(returnType) || Long.class.equals(returnType)) {
+            return affected.longValue();
+        }
+        if (short.class.equals(returnType) || Short.class.equals(returnType)) {
+            return affected.shortValue();
+        }
+        if (boolean.class.equals(returnType) || Boolean.class.equals(returnType)) {
+            return affected.intValue() > 0;
+        }
+        return affected;
     }
 }

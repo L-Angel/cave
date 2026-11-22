@@ -22,6 +22,10 @@ public interface Const {
 
     String CAVE_ELASTICSEARCH_HOST = "cave.elasticsearch.hosts";
 
+    String CAVE_ELASTICSEARCH_DEFAULT_SIZE = "cave.elasticsearch.default-size";
+
+    String CAVE_ELASTICSEARCH_GROUP_SIZE = "cave.elasticsearch.group-size";
+
     String ES_HOST = "es.host";
 
     String CAVE_ELASTICSEARCH_USERNAME = "cave.elasticsearch.username";
@@ -34,11 +38,25 @@ public interface Const {
 
     String CAVE_MYSQL_HOST = "cave.mysql.host";
 
+    String CAVE_MYSQL_URL = "cave.mysql.url";
+
+    String CAVE_MYSQL_URL_PARAMS = "cave.mysql.url-params";
+
     String CAVE_MYSQL_DBNAME = "cave.mysql.dbName";
 
     String CAVE_MYSQL_USERNAME = "cave.mysql.username";
 
     String CAVE_MYSQL_PASSWORD = "cave.mysql.password";
+
+    String CAVE_MYSQL_POOL_MAXIMUM_SIZE = "cave.mysql.pool.maximum-pool-size";
+
+    String CAVE_MYSQL_POOL_MINIMUM_IDLE = "cave.mysql.pool.minimum-idle";
+
+    String CAVE_MYSQL_POOL_CONNECTION_TIMEOUT = "cave.mysql.pool.connection-timeout";
+
+    String CAVE_MYSQL_POOL_IDLE_TIMEOUT = "cave.mysql.pool.idle-timeout";
+
+    String CAVE_MYSQL_POOL_MAX_LIFETIME = "cave.mysql.pool.max-lifetime";
 
     String CAVE_JDBC_DRIVER = "cave.jdbc.driver";
 

@@ -1,4 +1,34 @@
-.idea
-*.iml
-target
+# Build output
+target/
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+*.class
 pom_corp.xml
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.versionsBackup
+*.orig
+*.rej
+
+# Local environment
+.env
+.env.local

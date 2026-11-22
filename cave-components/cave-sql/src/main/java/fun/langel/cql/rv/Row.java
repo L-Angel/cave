@@ -1,11 +1,10 @@
 package fun.langel.cql.rv;
 
 import fun.langel.cql.exception.MappingException;
-import fun.langel.cql.node.Value;
 import fun.langel.cql.reflect.Field;
 import fun.langel.cql.reflect.Klass;
+import fun.langel.cql.util.TypeUtil;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +39,24 @@ public class Row implements ReturnValue<Map<java.lang.String, ReturnValue<?>>> {
 
     @Override
     public Object mapTo(Class<?> klass) throws MappingException {
-        Type t=klass;
+        if (TypeUtil.isSimple(klass)) {
+            if (this.columns.size() != 1) {
+                throw new MappingException("Cannot map " + this.columns.size() + " columns to "
+                        + klass.getName() + "; select exactly one column.");
+            }
+            ReturnValue<?> value = this.columns.values().iterator().next();
+            return value == null ? null : value.mapTo(klass);
+        }
+        if (TypeUtil.isMap(klass)) {
+            Map<java.lang.String, Object> result = new HashMap<>();
+            for (Map.Entry<java.lang.String, ReturnValue<?>> entry : this.columns.entrySet()) {
+                result.put(entry.getKey(), entry.getValue() == null ? null : entry.getValue().getValue());
+            }
+            return result;
+        }
 
         Klass cKls = Klass.of(klass);
-        Object o = null;
+        Object o;
         try {
             o = cKls.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {

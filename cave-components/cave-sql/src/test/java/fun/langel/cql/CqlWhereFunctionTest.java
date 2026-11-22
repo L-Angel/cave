@@ -12,7 +12,7 @@ public class CqlWhereFunctionTest {
 
     @Test
     public void testParseSelect_cqlWhereFunction() {
-        String sql = "select fielda from tablea where c_exists('fieldb') and fieldc > fieldd and c_exists('fielde')";
+        String sql = "select fielda from tablea where c_exists('fieldb') and fieldc > 'fieldd' and c_exists('fielde')";
 
         SelectStatement selectStatement = Cql.parseSelectStatement(sql);
         Assert.assertNotNull(selectStatement);
@@ -32,14 +32,15 @@ public class CqlWhereFunctionTest {
     public void testGroupBy() {
         String sql = "select fiedla,fieldb from demo_index where fieldc > '10' group by fieldd,fielde";
         SelectStatement selectStatement = Cql.parseSelectStatement(sql);
-        Assert.assertNotNull(selectStatement);
+        Assert.assertNotNull(selectStatement.groupBy());
+        Assert.assertEquals(2, selectStatement.groupBy().columns().size());
     }
 
     @Test
     public void testSqlFunction() {
         String sql = "select avg('fielda') from demo_index group by fieldb,fieldc";
         SelectStatement selectStatement = Cql.parseSelectStatement(sql);
-        Assert.assertNotNull(selectStatement);
+        Assert.assertNotNull(selectStatement.groupBy());
     }
 
     @Test

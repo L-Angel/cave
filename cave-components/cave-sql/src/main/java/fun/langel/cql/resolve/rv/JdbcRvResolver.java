@@ -29,12 +29,13 @@ public class JdbcRvResolver implements RvResolver<Object> {
             if (from instanceof ResultSet) {
                 Rows rows = new Rows();
                 ResultSet rs = (ResultSet) from;
+                ResultSetMetaData meta = rs.getMetaData();
+                int colSize = meta.getColumnCount();
                 while (rs.next()) {
                     Row row = new Row();
-                    ResultSetMetaData meta = rs.getMetaData();
-                    int colSize = meta.getColumnCount();
-                    for (int idx = 0; idx < colSize; idx++) {
-                        String columnName = meta.getColumnName(idx);
+                    // JDBC column indexes are 1-based.
+                    for (int idx = 1; idx <= colSize; idx++) {
+                        String columnName = meta.getColumnLabel(idx);
                         row.put(columnName, resolveObj(rs.getObject(idx)));
                     }
                     rows.add(row);

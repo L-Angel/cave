@@ -26,4 +26,11 @@ public interface Session {
     default Number executeInsert(String sql) {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * Releases resources held by this session (statements, cursors, connections).
+     * Implementations that do not own resources can keep the no-op default.
+     */
+    default void close() {
+    }
 }

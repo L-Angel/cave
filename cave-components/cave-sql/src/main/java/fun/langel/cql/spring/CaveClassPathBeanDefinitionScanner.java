@@ -1,5 +1,7 @@
 package fun.langel.cql.spring;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -13,6 +15,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -21,6 +24,8 @@ import java.util.Set;
  * @since 2021/8/20 12:34 上午
  **/
 public class CaveClassPathBeanDefinitionScanner extends ClassPathBeanDefinitionScanner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CaveClassPathBeanDefinitionScanner.class);
 
     private Class<? extends Annotation> annotationKlass;
 
@@ -55,6 +60,13 @@ public class CaveClassPathBeanDefinitionScanner extends ClassPathBeanDefinitionS
     protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 
         Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
+        if (beanDefinitions.isEmpty()) {
+            LOG.warn("No @{} interfaces found in package(s) {}. Check the scan packages, and make sure the "
+                            + "interfaces are public and annotated with @{}.",
+                    this.annotationKlass == null ? "Cave" : this.annotationKlass.getSimpleName(),
+                    Arrays.toString(basePackages),
+                    this.annotationKlass == null ? "Cave" : this.annotationKlass.getSimpleName());
+        }
         for (BeanDefinitionHolder bfh : beanDefinitions) {
             GenericBeanDefinition gbd = (GenericBeanDefinition) bfh.getBeanDefinition();
             ConstructorArgumentValues args = new ConstructorArgumentValues();

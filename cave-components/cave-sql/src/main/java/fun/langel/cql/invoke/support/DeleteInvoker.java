@@ -26,8 +26,6 @@ public class DeleteInvoker extends AbstractInvoker implements Invoker {
 
     @Override
     public Result invoke(Invocation iv) {
-        final Result result = new Result();
-        result.setValue("Empty implement!");
-        return result;
+        return invokeUpdate(iv, "DELETE");
     }
 }

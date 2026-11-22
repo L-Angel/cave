@@ -1,0 +1,75 @@
+name: Bug report
+description: Report a reproducible bug in Cave
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please include a minimal CQL statement and the datasource used.
+
+  - type: dropdown
+    id: datasource
+    attributes:
+      label: Datasource
+      description: Which datasource is involved?
+      options:
+        - Elasticsearch
+        - MongoDB
+        - MySQL / JDBC
+        - Multiple
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Cave version / commit
+      placeholder: "0.0.4 or commit sha"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: JDK, Maven, Elasticsearch/MongoDB/MySQL versions
+      placeholder: "JDK 17, Maven 3.9.15, ES 6.8.9"
+    validations:
+      required: true
+
+  - type: textarea
+    id: cql
+    attributes:
+      label: CQL statement and interface method
+      description: A minimal reproduction is the fastest path to a fix.
+      render: java
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior / stack trace
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues for duplicates.
+          required: true
+        - label: This is not a security vulnerability (see SECURITY.md).
+          required: true

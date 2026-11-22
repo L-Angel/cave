@@ -1,0 +1,15 @@
+Cave
+Copyright 2021-2026 Rick Jiang and Cave contributors
+
+This product includes a SQL grammar derived from the MySQL grammar:
+
+  MySQL (Positive Technologies) grammar
+  Copyright (c) 2015-2017 Ivan Kochurkin (kvanttt@gmail.com), Positive Technologies
+  Copyright (c) 2017 Ivan Khudyashev (IHudyashov@ptsecurity.com)
+  Licensed under the MIT License.
+
+See `cave-components/cave-sql/antlr4/CqlLexer.g4` and
+`cave-components/cave-sql/antlr4/CqlParser.g4` for the original notice.
+
+Other third-party components are consumed as Maven dependencies and remain
+under their respective licenses. See `pom.xml` for the dependency list.
