@@ -18,6 +18,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
 import java.sql.DriverManager;
@@ -36,7 +37,9 @@ import java.util.List;
 public class MySqlIntegrationTest {
 
     @ClassRule
-    public static final MySQLContainer<?> MYSQL = new MySQLContainer<>("public.ecr.aws/docker/library/mysql:8.0.36")
+    public static final MySQLContainer<?> MYSQL = new MySQLContainer<>(
+            DockerImageName.parse("public.ecr.aws/docker/library/mysql:8.0.36")
+                    .asCompatibleSubstituteFor("mysql"))
             .withDatabaseName("cave")
             .withUsername("cave")
             .withPassword("cave")
