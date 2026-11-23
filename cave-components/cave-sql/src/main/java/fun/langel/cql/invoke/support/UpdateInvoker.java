@@ -26,6 +26,6 @@ public class UpdateInvoker extends AbstractInvoker implements Invoker {
 
     @Override
     public Result invoke(Invocation iv) {
-        return invokeUpdate(iv, "UPDATE");
+        return invokeDml(iv, DmlOperation.UPDATE);
     }
 }

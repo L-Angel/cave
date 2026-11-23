@@ -13,23 +13,30 @@ import fun.langel.cql.datasource.*;
 import fun.langel.cql.dialect.MongoQDL;
 import fun.langel.cql.enums.Order;
 import fun.langel.cql.exception.DataSourceException;
+import fun.langel.cql.exception.SqlException;
+import fun.langel.cql.node.Assignment;
 import fun.langel.cql.node.Column;
+import fun.langel.cql.node.Expr;
 import fun.langel.cql.node.Function;
 import fun.langel.cql.node.GroupBy;
 import fun.langel.cql.node.Limit;
 import fun.langel.cql.node.OrderBy;
+import fun.langel.cql.node.Table;
+import fun.langel.cql.node.Value;
 import fun.langel.cql.node.func.Avg;
 import fun.langel.cql.node.func.C_KeyValue;
 import fun.langel.cql.node.func.Count;
 import fun.langel.cql.node.func.Max;
 import fun.langel.cql.node.func.Min;
 import fun.langel.cql.node.func.Sum;
-import fun.langel.cql.resolve.dialect.MongoDialectResolver;
 import fun.langel.cql.resolve.dialect.MongoQDLDialectResolver;
 import fun.langel.cql.resolve.rv.MongoRvResolver;
 import fun.langel.cql.rv.ReturnValue;
 import fun.langel.cql.rv.Rows;
+import fun.langel.cql.statement.DeleteStatement;
+import fun.langel.cql.statement.InsertStatement;
 import fun.langel.cql.statement.SelectStatement;
+import fun.langel.cql.statement.UpdateStatement;
 import fun.langel.cql.util.AggregationUtil;
 import fun.langel.cql.util.OrderByUtil;
 import fun.langel.cql.util.Props;
@@ -117,7 +124,7 @@ class MongoSession extends PreparedSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoSession.class);
 
-    private MongoDialectResolver<SelectStatement, Bson> dialectResolver;
+    private MongoQDLDialectResolver dialectResolver;
 
     private MongoRvResolver rvResolver;
 
@@ -495,22 +502,86 @@ class MongoSession extends PreparedSession {
     }
 
     @Override
-    public Number executeUpdate(String sql) {
-        throw new UnsupportedOperationException("UPDATE is not supported for mongodb datasources yet.");
-    }
-
-    @Override
     protected Number executeUpdate0(String sql) {
-        throw new UnsupportedOperationException("UPDATE is not supported for mongodb datasources yet.");
+        UpdateStatement update = Cql.parseUpdateStatement(sql);
+        List<Assignment> assignments = update.assignments();
+        if (assignments == null || assignments.isEmpty()) {
+            throw new SqlException("UPDATE requires at least one SET assignment.");
+        }
+        Document set = new Document();
+        for (Assignment assignment : assignments) {
+            String field = assignment.column().name();
+            if ("_id".equals(field)) {
+                throw new UnsupportedOperationException("_id cannot be updated for mongodb.");
+            }
+            set.put(field, value(assignment.value()));
+        }
+        MongoCollection<Document> collection = collection(update.table());
+        return fun.langel.cql.rv.Number.of(collection
+                .updateMany(filter(update.where()), new Document("$set", set))
+                .getMatchedCount());
     }
 
     @Override
-    public Number executeDelete(String sql) {
-        throw new UnsupportedOperationException("DELETE is not supported for mongodb datasources yet.");
+    protected Number executeInsert0(String sql) {
+        InsertStatement insert = Cql.parseInsertStatement(sql);
+        List<Document> documents = insertDocuments(insert);
+        MongoCollection<Document> collection = collection(insert.table());
+        if (documents.size() == 1) {
+            collection.insertOne(documents.get(0));
+        } else {
+            collection.insertMany(documents);
+        }
+        return fun.langel.cql.rv.Number.of(documents.size());
     }
 
     @Override
     protected Number executeDelete0(String sql) {
-        throw new UnsupportedOperationException("DELETE is not supported for mongodb datasources yet.");
+        DeleteStatement delete = Cql.parseDeleteStatement(sql);
+        MongoCollection<Document> collection = collection(delete.table());
+        return fun.langel.cql.rv.Number.of(collection.deleteMany(filter(delete.where())).getDeletedCount());
+    }
+
+    static List<Document> insertDocuments(InsertStatement statement) {
+        List<Column> columns = statement.into();
+        if (columns == null || columns.isEmpty()) {
+            throw new UnsupportedOperationException("INSERT into mongodb requires an explicit column list.");
+        }
+        List<List<Value>> rows = statement.values();
+        if (rows == null || rows.isEmpty()) {
+            throw new SqlException("INSERT requires at least one VALUES row.");
+        }
+        List<Document> documents = new LinkedList<>();
+        for (List<Value> row : rows) {
+            if (row.size() != columns.size()) {
+                throw new SqlException("INSERT column count (" + columns.size()
+                        + ") does not match value count (" + row.size() + ").");
+            }
+            Document document = new Document();
+            for (int idx = 0; idx < columns.size(); idx++) {
+                document.put(columns.get(idx).name(), value(row.get(idx)));
+            }
+            documents.add(document);
+        }
+        return documents;
+    }
+
+    private MongoCollection<Document> collection(Table table) {
+        if (table == null || StringUtil.isEmpty(table.getName())) {
+            throw new SqlException("MongoDB DML requires a collection name.");
+        }
+        return this.mongoDatabase.getCollection(StringUtil.stripQuote(table.getName()));
+    }
+
+    private Bson filter(Expr where) {
+        if (where == null) {
+            return new Document();
+        }
+        Bson filter = this.dialectResolver.filter(where);
+        return filter == null ? new Document() : filter;
+    }
+
+    private static Object value(Value value) {
+        return value == null || value.isNull() ? null : value.value();
     }
 }

@@ -25,6 +25,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -108,6 +109,7 @@ public class MySqlIntegrationTest {
             statement.execute("update users set score=12.50, active=true where id=1");
             statement.execute("update users set score=5.00, active=false where id=2");
             statement.execute("update users set score=20.00, active=true where id=3");
+            statement.execute("delete from users where id >= 100");
         }
     }
 
@@ -188,6 +190,74 @@ public class MySqlIntegrationTest {
         Assert.assertEquals(LocalDateTime.of(2024, 2, 3, 4, 5, 6), user.created);
     }
 
+    @Test
+    public void insertsUpdatesWithDuplicateKeyAndDeletesRows() {
+        LocalDateTime created = LocalDateTime.of(2024, 4, 5, 6, 7, 8);
+        Arg[] insertArgs = {
+                new Arg("id", "id", 100L, Long.class),
+                new Arg("name", "name", "dave", String.class),
+                new Arg("score", "score", new BigDecimal("7.25"), BigDecimal.class),
+                new Arg("active", "active", true, Boolean.class),
+                new Arg("created", "created", Timestamp.valueOf(created), Timestamp.class)
+        };
+
+        Number inserted = executeInsert("insert into users(id, name, score, active, created) "
+                + "values(#{id}, #{name}, #{score}, #{active}, #{created})", insertArgs);
+
+        Assert.assertEquals(1, inserted.intValue());
+        User user = (User) ((List<?>) query("select name, score, active, created from users where id = 100")
+                .mapTo(User.class)).get(0);
+        Assert.assertEquals("dave", user.name);
+        Assert.assertEquals(new BigDecimal("7.25"), user.score);
+        Assert.assertTrue(user.active);
+        Assert.assertEquals(created, user.created);
+
+        Arg[] duplicateArgs = {
+                new Arg("id", "id", 100L, Long.class),
+                new Arg("name", "name", "dave-updated", String.class),
+                new Arg("score", "score", new BigDecimal("8.50"), BigDecimal.class),
+                new Arg("active", "active", false, Boolean.class),
+                new Arg("created", "created", Timestamp.valueOf(created), Timestamp.class)
+        };
+        Number upserted = executeInsert("insert into users(id, name, score, active, created) "
+                + "values(#{id}, #{name}, #{score}, #{active}, #{created}) "
+                + "on duplicate key update name = values(name), score = values(score), active = values(active)",
+                duplicateArgs);
+
+        Assert.assertTrue(upserted.intValue() >= 1);
+        User updated = (User) ((List<?>) query("select name, score, active, created from users where id = 100")
+                .mapTo(User.class)).get(0);
+        Assert.assertEquals("dave-updated", updated.name);
+        Assert.assertEquals(new BigDecimal("8.50"), updated.score);
+        Assert.assertFalse(updated.active);
+
+        Number deleted = executeDelete("delete from users where id = #{id}",
+                new Arg("id", "id", 100L, Long.class));
+
+        Assert.assertEquals(1, deleted.intValue());
+        Rows remaining = (Rows) query("select id from users where id = 100");
+        Assert.assertTrue(remaining.getValue().isEmpty());
+    }
+
+    private Number executeInsert(String sql, Arg... args) {
+        return executeDml(sql, true, args);
+    }
+
+    private Number executeDelete(String sql, Arg... args) {
+        return executeDml(sql, false, args);
+    }
+
+    private Number executeDml(String sql, boolean insert, Arg... args) {
+        Session session = DATA_SOURCE.getConnection().getSession();
+        try {
+            Pair<String, List<Parameter>> pair = new ParameterResolver().resolveForJdbc(sql, args);
+            ((fun.langel.cql.datasource.PreparedSession) session).setParameters(pair.right());
+            return insert ? session.executeInsert(pair.left()) : session.executeDelete(pair.left());
+        } finally {
+            session.close();
+        }
+    }
+
     private static String env(String key, String defaultValue) {
         String value = System.getenv(key);
         return StringUtil.isEmpty(value) ? defaultValue : value;
@@ -232,6 +302,7 @@ public class MySqlIntegrationTest {
     }
 
     public static class User {
+        private String name;
         private BigDecimal score;
         private boolean active;
         private LocalDateTime created;

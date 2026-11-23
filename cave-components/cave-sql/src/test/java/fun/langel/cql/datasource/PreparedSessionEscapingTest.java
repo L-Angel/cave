@@ -57,6 +57,18 @@ public class PreparedSessionEscapingTest {
         Assert.assertEquals("select f from t where f = null", session.sql);
     }
 
+    @Test
+    public void parameterValuesAreNotRescannedForPlaceholders() {
+        CapturingSession session = new CapturingSession();
+        session.setParameters(Arrays.asList(
+                new Parameter("a", "#{b}", 0, String.class),
+                new Parameter("b", "boom", 1, String.class)));
+
+        session.executeQuery("select f from t where a = #{a} and b = #{b}");
+
+        Assert.assertEquals("select f from t where a = '#{b}' and b = 'boom'", session.sql);
+    }
+
     private static class CapturingSession extends PreparedSession {
 
         private String sql;
@@ -74,6 +86,11 @@ public class PreparedSessionEscapingTest {
 
         @Override
         protected Number executeUpdate0(String sql) {
+            return null;
+        }
+
+        @Override
+        protected Number executeInsert0(String sql) {
             return null;
         }
 

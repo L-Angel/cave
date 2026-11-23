@@ -26,6 +26,6 @@ public class DeleteInvoker extends AbstractInvoker implements Invoker {
 
     @Override
     public Result invoke(Invocation iv) {
-        return invokeUpdate(iv, "DELETE");
+        return invokeDml(iv, DmlOperation.DELETE);
     }
 }

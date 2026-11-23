@@ -202,6 +202,11 @@ class JdbcSession implements Session {
     }
 
     @Override
+    public Number executeInsert(String sql) {
+        return executeUpdate0(sql);
+    }
+
+    @Override
     public Number executeDelete(String sql) {
         return executeUpdate0(sql);
     }
@@ -248,6 +253,11 @@ class JdbcPreparedSession extends PreparedSession {
 
     @Override
     public Number executeUpdate(String sql) {
+        return runUpdate(sql);
+    }
+
+    @Override
+    public Number executeInsert(String sql) {
         return runUpdate(sql);
     }
 

@@ -16,6 +16,11 @@ public class EmptyStatement implements SelectStatement, DeleteStatement {
     }
 
     @Override
+    public Table table() {
+        return null;
+    }
+
+    @Override
     public List<Table> tables() {
         return null;
     }

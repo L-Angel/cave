@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Elasticsearch `INSERT` / `UPDATE` / `DELETE`: index/bulk writes,
+  `_update_by_query` with a painless `SET` script and `_delete_by_query`,
+  reusing the CQL WHERE translation.
+- MongoDB `INSERT` / `UPDATE` / `DELETE`: `insertOne` / `insertMany`,
+  `updateMany` with `$set` and `deleteMany`, reusing the CQL WHERE translation.
+- INSERT / UPDATE / DELETE parameter routing
+  (`executeInsert` / `executeUpdate` / `executeDelete`); non-JDBC DML
+  interpolates `#{name}` values like SELECT.
+- CQL parser builds INSERT / UPDATE / DELETE ASTs with table, column values,
+  SET assignments and WHERE clauses.
 - Explicit CQL support matrix in `README.md` for Elasticsearch, MongoDB and JDBC.
 - Parentheses, `NOT`, `NOT BETWEEN`, `&&`/`||` and standard AND/OR precedence.
 - `SUM`, `MIN`, `MAX`, `COUNT(DISTINCT ...)` parsing and Elasticsearch aggregations.
@@ -58,6 +68,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Cql.parseDeleteStatement` now throws `SqlException` when no DELETE statement is
+  present (previously returned `null`), mirroring `parseSelectStatement`.
+- `INSERT` / `UPDATE` / `DELETE` no longer require a JDBC datasource; ES and
+  MongoDB execute them through their native write APIs (no WHERE means all
+  documents, matching SQL semantics).
 - Project version is now `0.1.1-SNAPSHOT`; the latest published release is
   `0.1.0`.
 - `@CaveScan(useDefaultElasticSearch = true)` registers the datasource as

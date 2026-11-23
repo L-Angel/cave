@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -97,13 +98,7 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             ssb.fetchSource(sourceFields(columns), null);
         }
         if (statement.where() != null) {
-            List<QueryBuilder> builders = resolveQueryCondition(statement.where());
-            if (ListUtil.isNullOrEmpty(builders)) {
-                throw new UnsupportedOperationException("WHERE condition could not be translated to elasticsearch.");
-            }
-            BoolQueryBuilder qb = QueryBuilders.boolQuery();
-            qb.must().addAll(builders);
-            ssb.query(qb);
+            ssb.query(filter(statement.where()));
         }
         if (grouped) {
             ssb.aggregation(groupAggregation(statement, columns));
@@ -118,7 +113,8 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             }
         }
         List<String> tables = ListUtil.isNullOrEmpty(statement.tables()) ? null
-                : statement.tables().stream().map(Table::getName).map(String::toLowerCase).collect(Collectors.toList());
+                : statement.tables().stream().map(Table::getName)
+                .map(name -> name.toLowerCase(Locale.ROOT)).collect(Collectors.toList());
         SearchRequest sr = new SearchRequest(ListUtil.toStringArray(tables));
         sr.searchType(SearchType.DEFAULT);
         sr.source(ssb);
@@ -126,6 +122,24 @@ public class ElasticSearchQDLDialectResolver implements ElasticSearchDialectReso
             LOG.debug("ElasticSearch Qdl : {}", sr.source());
         }
         return new ElasticSearchQDL(sr);
+    }
+
+    /**
+     * Translates a CQL WHERE expression into an Elasticsearch query. A missing
+     * condition becomes match_all, which UPDATE / DELETE use to target every
+     * document (matching SQL semantics).
+     */
+    public QueryBuilder filter(Expr expr) {
+        if (expr == null) {
+            return QueryBuilders.matchAllQuery();
+        }
+        List<QueryBuilder> builders = resolveQueryCondition(expr);
+        if (ListUtil.isNullOrEmpty(builders)) {
+            throw new UnsupportedOperationException("WHERE condition could not be translated to elasticsearch.");
+        }
+        BoolQueryBuilder qb = QueryBuilders.boolQuery();
+        qb.must().addAll(builders);
+        return qb;
     }
 
     private int defaultSize() {

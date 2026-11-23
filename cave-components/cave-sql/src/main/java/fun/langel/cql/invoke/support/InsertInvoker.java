@@ -26,6 +26,6 @@ public class InsertInvoker extends AbstractInvoker implements Invoker {
 
     @Override
     public Result invoke(Invocation iv) {
-        return invokeUpdate(iv, "INSERT");
+        return invokeDml(iv, DmlOperation.INSERT);
     }
 }

@@ -62,9 +62,16 @@ public class SelectInvokerTest {
         Assert.assertTrue(session.closed);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void nonJdbcUpdateFailsFast() throws Exception {
-        updateInvoker(new FakeSession(Language.ELASTIC_SEARCH)).invoke(invocation("update"));
+    @Test
+    public void nonJdbcUpdateUsesOriginalSqlForInterpolation() throws Exception {
+        FakeSession session = new FakeSession(Language.ELASTIC_SEARCH);
+        UpdateInvoker invoker = updateInvoker(session);
+
+        Result result = invoker.invoke(invocation("update"));
+
+        Assert.assertEquals("update t set f = #{p} where id = 1", session.executedSql);
+        Assert.assertEquals(3, result.getValue());
+        Assert.assertTrue(session.closed);
     }
 
     private SelectInvoker selectInvoker(Session session) throws Exception {

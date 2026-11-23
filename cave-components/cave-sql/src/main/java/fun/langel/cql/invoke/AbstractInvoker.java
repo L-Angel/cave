@@ -19,6 +19,12 @@ import java.util.List;
  **/
 public abstract class AbstractInvoker implements Invoker {
 
+    public enum DmlOperation {
+        INSERT,
+        UPDATE,
+        DELETE
+    }
+
     private final Target target;
 
     private final String sql;
@@ -93,24 +99,44 @@ public abstract class AbstractInvoker implements Invoker {
     }
 
     /**
-     * Executes a DML statement. DML is currently implemented for JDBC datasources
-     * only; ES and Mongo throw instead of silently returning a fake result.
+     * Executes a DML statement through the session write method matching the
+     * annotation. JDBC sessions receive positional SQL, while ES / Mongo sessions
+     * receive the original statement so parameter values can be interpolated
+     * before it is parsed as CQL.
      */
-    protected Result invokeUpdate(Invocation iv, String operation) {
+    protected Result invokeDml(Invocation iv, DmlOperation operation) {
         Session session = getSession();
         try {
-            Language lang = session.lang();
-            if (lang != Language.MYSQL) {
-                throw new UnsupportedOperationException(operation
-                        + " is only supported for JDBC datasources, current language: " + lang);
+            java.lang.Number affected;
+            String sql = dmlSql(session);
+            switch (operation) {
+                case INSERT:
+                    affected = session.executeInsert(sql);
+                    break;
+                case UPDATE:
+                    affected = session.executeUpdate(sql);
+                    break;
+                case DELETE:
+                    affected = session.executeDelete(sql);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported DML operation: " + operation);
             }
-            java.lang.Number affected = session.executeUpdate(executableSql());
             Result result = new Result();
             result.setValue(mapAffectedRows(affected, iv.returnType()));
             return result;
         } finally {
             session.close();
         }
+    }
+
+    private String dmlSql(Session session) {
+        if (session.lang() == Language.MYSQL) {
+            return executableSql();
+        }
+        // Non-JDBC sessions interpolate #{param} values into the original CQL
+        // statement and parse it themselves.
+        return this.sql();
     }
 
     private Object mapAffectedRows(java.lang.Number affected, Class<?> returnType) {

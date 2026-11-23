@@ -9,9 +9,11 @@ import fun.langel.cql.parameter.Parameter;
 import fun.langel.cql.parameter.ParameterResolver;
 import fun.langel.cql.resolve.dialect.ElasticSearchQDLDialectResolver;
 import fun.langel.cql.statement.DeleteStatement;
+import fun.langel.cql.statement.InsertStatement;
 import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.statement.Statement;
 import fun.langel.cql.statement.Statements;
+import fun.langel.cql.statement.UpdateStatement;
 import fun.langel.cql.util.Pair;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -88,7 +90,27 @@ public class Cql {
                 return (DeleteStatement) statement;
             }
         }
-        return null;
+        throw new SqlException("No delete statement found in CQL: " + sql);
+    }
+
+    public static InsertStatement parseInsertStatement(final String sql) {
+        Statements statements = parse(sql);
+        for (Statement statement : statements) {
+            if (statement instanceof InsertStatement) {
+                return (InsertStatement) statement;
+            }
+        }
+        throw new SqlException("No insert statement found in CQL: " + sql);
+    }
+
+    public static UpdateStatement parseUpdateStatement(final String sql) {
+        Statements statements = parse(sql);
+        for (Statement statement : statements) {
+            if (statement instanceof UpdateStatement) {
+                return (UpdateStatement) statement;
+            }
+        }
+        throw new SqlException("No update statement found in CQL: " + sql);
     }
 
 }

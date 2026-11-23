@@ -17,7 +17,9 @@ import fun.langel.cql.statement.SelectStatement;
 import fun.langel.cql.statement.Statement;
 import fun.langel.cql.statement.Statements;
 import fun.langel.cql.statement.impl.DeleteStatementImpl;
+import fun.langel.cql.statement.impl.InsertStatementImpl;
 import fun.langel.cql.statement.impl.SelectStatementImpl;
+import fun.langel.cql.statement.impl.UpdateStatementImpl;
 import fun.langel.cql.util.IntegerUtil;
 import fun.langel.cql.util.StringUtil;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -81,9 +83,195 @@ public class DefaultCqlParserVisitor extends CqlParserBaseVisitor<Node> implemen
             }
             throw new UnsupportedOperationException("UNION / parenthesized SELECT is not supported yet.");
         } else if (Objects.nonNull(ctx.deleteStatement())) {
-            return new DeleteStatementImpl();
+            return visitDeleteStatement(ctx.deleteStatement());
+        } else if (Objects.nonNull(ctx.insertStatement())) {
+            return visitInsertStatement(ctx.insertStatement());
+        } else if (Objects.nonNull(ctx.updateStatement())) {
+            return visitUpdateStatement(ctx.updateStatement());
         }
         return new EmptyStatement();
+    }
+
+    @Override
+    public Statement visitInsertStatement(CqlParser.InsertStatementContext ctx) {
+        if (ctx.partitions != null) {
+            throw new UnsupportedOperationException("INSERT ... PARTITION is not supported in CQL DML yet.");
+        }
+        if (ctx.IGNORE() != null || ctx.priority != null) {
+            throw new UnsupportedOperationException(
+                    "INSERT IGNORE / priority modifiers are not supported in CQL DML yet.");
+        }
+        if (ctx.duplicatedFirst != null || !ctx.duplicatedElements.isEmpty()) {
+            throw new UnsupportedOperationException("ON DUPLICATE KEY UPDATE is not supported in CQL DML yet.");
+        }
+        InsertStatementImpl statement = new InsertStatementImpl();
+        statement.setTable(table(ctx.tableName()));
+        if (ctx.insertStatementValue() != null) {
+            CqlParser.InsertStatementValueContext value = ctx.insertStatementValue();
+            if (value.selectStatement() != null) {
+                throw new UnsupportedOperationException("INSERT ... SELECT is not supported in CQL DML yet.");
+            }
+            if (ctx.columns == null || ctx.columns.uid().isEmpty()) {
+                throw new UnsupportedOperationException("INSERT requires an explicit column list.");
+            }
+            statement.setInto(columns(ctx.columns));
+            requireUniqueColumns(statement.into());
+            List<List<Value>> rows = new LinkedList<>();
+            for (CqlParser.ExpressionsWithDefaultsContext row : value.expressionsWithDefaults()) {
+                List<Value> rowValues = new LinkedList<>();
+                for (CqlParser.ExpressionOrDefaultContext item : row.expressionOrDefault()) {
+                    rowValues.add(literal(item));
+                }
+                rows.add(rowValues);
+            }
+            validateRowSizes(statement.into(), rows);
+            statement.setValues(rows);
+            return statement;
+        }
+        if (ctx.setFirst == null) {
+            throw new SqlException("Unsupported INSERT syntax: " + ctx.getText());
+        }
+        List<CqlParser.UpdatedElementContext> elements = new LinkedList<>();
+        elements.add(ctx.setFirst);
+        elements.addAll(ctx.setElements);
+        List<Column> into = new LinkedList<>();
+        List<Value> row = new LinkedList<>();
+        for (CqlParser.UpdatedElementContext element : elements) {
+            into.add(Column.of(StringUtil.stripQuote(element.fullColumnName().getText())));
+            row.add(updatedValue(element));
+        }
+        requireUniqueColumns(into);
+        statement.setInto(into);
+        List<List<Value>> rows = new LinkedList<>();
+        rows.add(row);
+        statement.setValues(rows);
+        return statement;
+    }
+
+    @Override
+    public Statement visitUpdateStatement(CqlParser.UpdateStatementContext ctx) {
+        if (ctx.multipleUpdateStatement() != null) {
+            throw new UnsupportedOperationException("Multiple-table UPDATE is not supported in CQL DML yet.");
+        }
+        CqlParser.SingleUpdateStatementContext single = ctx.singleUpdateStatement();
+        if (single == null) {
+            throw new SqlException("Unsupported UPDATE syntax: " + ctx.getText());
+        }
+        if (single.uid() != null) {
+            throw new UnsupportedOperationException("UPDATE ... AS alias is not supported in CQL DML yet.");
+        }
+        if (single.IGNORE() != null || single.priority != null) {
+            throw new UnsupportedOperationException(
+                    "UPDATE IGNORE / priority modifiers are not supported in CQL DML yet.");
+        }
+        if (single.orderByClause() != null || single.limitClause() != null) {
+            throw new UnsupportedOperationException(
+                    "ORDER BY / LIMIT is not supported in UPDATE for CQL DML yet.");
+        }
+        UpdateStatementImpl statement = new UpdateStatementImpl();
+        statement.setTable(table(single.tableName()));
+        List<Assignment> assignments = new LinkedList<>();
+        for (CqlParser.UpdatedElementContext element : single.updatedElement()) {
+            assignments.add(new Assignment(
+                    Column.of(StringUtil.stripQuote(element.fullColumnName().getText())), updatedValue(element)));
+        }
+        requireUniqueAssignments(assignments);
+        statement.setAssignments(assignments);
+        statement.setWhere(where(single.expression()));
+        return statement;
+    }
+
+    @Override
+    public Statement visitDeleteStatement(CqlParser.DeleteStatementContext ctx) {
+        if (ctx.multipleDeleteStatement() != null) {
+            throw new UnsupportedOperationException("Multiple-table DELETE is not supported in CQL DML yet.");
+        }
+        CqlParser.SingleDeleteStatementContext single = ctx.singleDeleteStatement();
+        if (single == null) {
+            throw new SqlException("Unsupported DELETE syntax: " + ctx.getText());
+        }
+        if (single.IGNORE() != null || single.QUICK() != null || single.priority != null) {
+            throw new UnsupportedOperationException(
+                    "DELETE IGNORE / QUICK / priority modifiers are not supported in CQL DML yet.");
+        }
+        if (single.orderByClause() != null || single.limitClauseAtom() != null) {
+            throw new UnsupportedOperationException(
+                    "ORDER BY / LIMIT is not supported in DELETE for CQL DML yet.");
+        }
+        DeleteStatementImpl statement = new DeleteStatementImpl();
+        statement.setTable(table(single.tableName()));
+        statement.setWhere(where(single.expression()));
+        return statement;
+    }
+
+    private Table table(CqlParser.TableNameContext ctx) {
+        return Table.of(StringUtil.stripQuote(ctx.getText()), null);
+    }
+
+    private Expr where(CqlParser.ExpressionContext ctx) {
+        return normalizeLogical(this.cqlParseExtension.afterWhere(visitExpr(ctx)));
+    }
+
+    private List<Column> columns(CqlParser.UidListContext ctx) {
+        List<Column> columns = new LinkedList<>();
+        for (CqlParser.UidContext uid : ctx.uid()) {
+            columns.add(Column.of(StringUtil.stripQuote(uid.getText())));
+        }
+        return columns;
+    }
+
+    private Value updatedValue(CqlParser.UpdatedElementContext element) {
+        if (element.expression() == null) {
+            throw new UnsupportedOperationException("DEFAULT is not supported in INSERT / UPDATE yet.");
+        }
+        return literal(element.expression().getText());
+    }
+
+    private Value literal(CqlParser.ExpressionOrDefaultContext ctx) {
+        if (ctx.expression() == null) {
+            throw new UnsupportedOperationException("DEFAULT is not supported in INSERT yet.");
+        }
+        return literal(ctx.expression().getText());
+    }
+
+    private Value literal(String text) {
+        if (!isLiteralValue(text)) {
+            throw new UnsupportedOperationException("Only literal values are supported in INSERT / UPDATE: " + text);
+        }
+        return Value.of(text);
+    }
+
+    private void validateRowSizes(List<Column> columns, List<List<Value>> rows) {
+        if (rows.isEmpty()) {
+            throw new SqlException("INSERT requires at least one VALUES row.");
+        }
+        for (List<Value> row : rows) {
+            if (row.size() != columns.size()) {
+                throw new SqlException("INSERT column count (" + columns.size()
+                        + ") does not match value count (" + row.size() + ").");
+            }
+        }
+    }
+
+    private void requireUniqueColumns(List<Column> columns) {
+        List<String> seen = new LinkedList<>();
+        for (Column column : columns) {
+            if (seen.contains(column.name())) {
+                throw new SqlException("Duplicate column in INSERT / UPDATE: " + column.name());
+            }
+            seen.add(column.name());
+        }
+    }
+
+    private void requireUniqueAssignments(List<Assignment> assignments) {
+        List<String> seen = new LinkedList<>();
+        for (Assignment assignment : assignments) {
+            String name = assignment.column().name();
+            if (seen.contains(name)) {
+                throw new SqlException("Duplicate SET column in UPDATE: " + name);
+            }
+            seen.add(name);
+        }
     }
 
     @Override

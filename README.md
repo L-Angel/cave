@@ -138,12 +138,21 @@ public interface Repositories {
 
     @Update(sql = "update users set name = #{name} where id = #{id}", direct = "mysql")
     int rename(@Param(name = "name") String name, @Param(name = "id") long id);
+
+    @Update(sql = "update users set name = #{name} where id = #{id}", direct = "defaultEs")
+    int renameEs(@Param(name = "name") String name, @Param(name = "id") long id);
+
+    @Insert(sql = "insert into users(id, name) values(#{id}, #{name})", direct = "mongodb")
+    int insertMongo(@Param(name = "id") long id, @Param(name = "name") String name);
+
+    @Delete(sql = "delete from users where id = #{id}", direct = "mongodb")
+    boolean deleteMongo(@Param(name = "id") long id);
 }
 ```
 
 - `direct` 对应数据源名称：Starter 为 `defaultEs`、`mongodb`、`mysql`。
 - MySQL 路径不解析 SQL，JOIN、子查询、CTE、窗口函数等由 MySQL 原生执行；
-  Mongo 为单集合查询；ES 为索引查询。
+  ES / Mongo 的 SELECT / INSERT / UPDATE / DELETE 会翻译为对应的原生请求。
 
 ## Spring Boot Starter（0.1.1+）
 
@@ -315,7 +324,36 @@ cave:
 | `ORDER BY 1` 位置序号 | ✅ | ✅ | 按 SELECT 列序号解析 |
 | `SELECT *` 与显式字段混用 | ❌ | ❌ | 显式抛异常 |
 
-## 2. 函数与聚合
+## 2. ES / MongoDB 写入（DML）
+
+| 能力 | Elasticsearch | MongoDB | 说明 |
+|------|:---:|:---:|------|
+| `INSERT INTO t (cols) VALUES (...), (...)` | ✅ | ✅ | 需要显式列名；支持多行 |
+| `INSERT INTO t SET col = value, ...` | ✅ | ✅ | |
+| `UPDATE t SET col = value, ... [WHERE ...]` | ✅ | ✅ | ES `_update_by_query`；Mongo `updateMany` + `$set` |
+| `DELETE FROM t [WHERE ...]` | ✅ | ✅ | ES `_delete_by_query`；Mongo `deleteMany` |
+| WHERE 条件 | ✅ | ✅ | 复用 SELECT 的条件翻译（`= != > < >= <= LIKE IN BETWEEN IS NULL AND OR NOT` 等） |
+| `#{name}` 参数 | ✅ | ✅ | 与 SELECT 一样插值后解析 |
+| 返回影响行数 | ✅ | ✅ | 方法可返回 `int` / `long` / `boolean` |
+| 无 WHERE 的 UPDATE / DELETE | ✅ | ✅ | 作用于全部文档，与 SQL 语义一致，请谨慎使用 |
+| `ORDER BY` / `LIMIT`（UPDATE / DELETE） | ❌ | ❌ | 显式抛异常 |
+| 多表 / 子查询 / `INSERT ... SELECT` | ❌ | ❌ | 显式抛异常 |
+| `ON DUPLICATE KEY UPDATE` / upsert | ❌ | ❌ | 显式抛异常 |
+
+写入语义：
+
+- Elasticsearch：INSERT 使用 index/bulk 写入（6.x 文档类型固定为 `_doc`），列 `_id` 作为文档 id
+  并采用 create 语义（重复 id 插入会失败），否则由 ES 自动生成；写入后立即 refresh，
+  因此后续 SELECT 可以看到写入结果。UPDATE 使用 `_update_by_query` + painless 脚本，
+  返回匹配的文档数（含脚本未改变内容的 noop）；DELETE 使用 `_delete_by_query`，返回删除的文档数。
+- MongoDB：INSERT 使用 `insertOne` / `insertMany`，返回写入行数；UPDATE 使用
+  `updateMany` + `$set`，返回匹配行数；DELETE 使用 `deleteMany`，返回删除行数。
+- ES / Mongo 的 `#{name}` 参数会先插值成字面量再解析，因此 `Date` / `BigDecimal` 等 Java 类型
+  不会保留；日期请使用字符串字面量或底层 mapping 可解析的格式。
+- `_id` 只允许在 INSERT 中指定，不能在 UPDATE 的 SET 中修改。
+- 列名按 ES / Mongo 的字段名原样使用；嵌套字段点号路径的行为取决于底层存储，Cave 不做额外的字段展开。
+
+## 3. 函数与聚合
 
 | 函数 | Elasticsearch | MongoDB | 说明 |
 |------|:---:|:---:|------|
@@ -342,7 +380,7 @@ cave:
 
 > 能力定义集中在 `fun.langel.cql.capability.Capabilities`，两个方言共享同一套校验和 conformance 测试，未实现的能力会显式失败，不会静默忽略。
 
-## 3. MySQL / JDBC
+## 4. MySQL / JDBC
 
 | 能力 | 状态 | 说明 |
 |------|:---:|------|
@@ -360,7 +398,7 @@ cave:
 | 动态表名/列名 `${table}` | ❌ | JDBC 下会成为绑定参数 |
 | SQL AST 校验/改写 | ❌ | JDBC 路径直接交给 MySQL |
 
-## 4. 各数据源语义差异
+## 5. 各数据源语义差异
 
 ### Elasticsearch
 - `= null`、`!= null` 按标准 SQL 返回空结果；判空请使用 `IS NULL` / `IS NOT NULL`。
@@ -373,6 +411,11 @@ cave:
   （`cave.elasticsearch.group-size` 可配置）；分组后的 `HAVING` / `ORDER BY` / `LIMIT`
   由中间件在内存中完成。
 - 非分组聚合查询的 `ORDER BY` 使用原始字段名；聚合别名排序仅在 `GROUP BY` 查询中支持。
+- `INSERT` 写入目标索引（表名会被转为小写，6.x 文档类型为 `_doc`），列 `_id` 作为文档 id
+  并使用 create 语义（重复 id 插入失败），否则由 ES 自动生成；写入后立即 refresh。
+  `UPDATE` / `DELETE` 使用 `_update_by_query` / `_delete_by_query`，
+  无 `WHERE` 时作用于索引内全部文档；`UPDATE` 返回匹配的文档数（含 noop），`DELETE` 返回删除的文档数。
+- `UPDATE` 的 SET 通过 painless 脚本执行，不能修改 `_id` 或其他元数据字段。
 
 ### MongoDB
 - 只支持单集合查询。
@@ -387,6 +430,10 @@ cave:
 - 不支持 JOIN、子查询、`c_script`、日期函数，使用时会显式抛异常。
 - `GROUP BY` / `DISTINCT` 的组键在管道内部使用 `k0/k1/...` 合成键，最终投影回原字段名或别名。
 - 字段间比较使用 `$expr`，例如 `a > b` 生成 `{"$expr": {"$gt": ["$a", "$b"]}}`。
+- `INSERT` 使用 `insertOne` / `insertMany` 写入目标集合，返回写入行数；`UPDATE` 使用
+  `updateMany` + `$set`，返回匹配行数；`DELETE` 使用 `deleteMany`，返回删除行数。
+- 无 `WHERE` 的 `UPDATE` / `DELETE` 作用于集合内全部文档；`_id` 只能在 INSERT 中指定，
+  不能在 UPDATE 的 SET 中修改。
 
 ### MySQL / JDBC
 - 支持 `SELECT`、`INSERT`、`UPDATE`、`DELETE`，参数通过 `?` 绑定到 `PreparedStatement`。
